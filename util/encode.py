@@ -1,5 +1,7 @@
 import os
-import numpy as np
+import pickle
+
+import preprocess.py
 
 from sklearn.decomposition import TruncatedSVD
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -9,12 +11,12 @@ from gensim.models.doc2vec import LabeledSentence
 
 from keras.preprocessing.text import text_to_word_sequence
 
+
 def svd(data, svder=None, input_field='tfidf', pickle_file=None, **kwargs):
     if pickle_file:
-        path = find_pickle(pickle_file)
+        path = preprocess.find_pickle(pickle_file)
         if path:
             return pickle.load(open(path, 'rb'))
-
     X = [d[input_field] for d in data]
     if not svder:
         svder = TruncatedSVD(**kwargs)
@@ -24,12 +26,12 @@ def svd(data, svder=None, input_field='tfidf', pickle_file=None, **kwargs):
         d['svd'] = s
     return svder
 
+
 def tfidf(data, tfidfer=None, pickle_file=None, **kwargs):
     if pickle_file:
-        path = find_pickle(pickle_file)
+        path = preprocess.find_pickle(pickle_file)
         if path:
             return pickle.load(open(path, 'rb'))
-
     X = [d['text'] for d in data]
     if not tfidfer:
         tfidfer = TfidfVectorizer(**kwargs)
@@ -39,36 +41,26 @@ def tfidf(data, tfidfer=None, pickle_file=None, **kwargs):
         d['tfidf'] = t
     return tfidfer
 
+
 def tfidf_sequential(data, tfidfer=None, pickle_file=None, **kwargs):
     if pickle_file:
-        path = find_pickle(pickle_file)
+        path = preprocess.find_pickle(pickle_file)
         if path:
             return pickle.load(open(path, 'rb'))
-
     X = [d['text'] for d in data]
-    #! cat all text and append it to X
+    # cat all text and append it to X
     if not tfidfer:
         tfidfer = TfidfVectorizer(**kwargs)
         tfidfer.fit(X)
     tfidfed = tfidfer.transform(X)
-    #! now we use the tfidf of the last element in X
+    names = tfidfer.get_feature_names()
+    # now we use the tfidf of the last element in X
     for d in data:
         d['tfidf'] = []
-        #! for each term in d['text']
-        #!    d['tfidf'].append(tfidf of term according to X)
+        for word in d['text'].split():
+            if word in names:
+                d['tfidf'].append(tfidfed[names.index(word)])
     return tfidfer
-
-def tfidf_bobo(data):
-    sentences = [el['text'] for el in data]
-    vect = TfidfVectorizer()
-    X = vect.fit_transform(sentences)
-    X = [list(filter(lambda a: a != 0, line)) for line in X.toarray()]
-    max_len = np.max([len(a) for a in X])
-    X = [np.pad(a, (0, max_len - len(a)), 'constant', constant_values=0) for a in X]
-    index = 0
-    for _ in data:
-        data[index]['tfidf'] = X[index]
-        index = index + 1
 
 
 def tfidf_SVD(data, l):
@@ -84,7 +76,6 @@ def tfidf_SVD(data, l):
 
 
 def doc2vec(data, l, model):
-    sentences = [el['text'] for el in data]
     label_sentences = []
     index = 0
     for row in data:
