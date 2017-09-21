@@ -5,6 +5,9 @@ import pandas
 import pickle
 import re
 
+def field_array(data, field):
+    return [d[field] for d in data]
+
 def find_pickle(filename):
     for ext in ['', '.pickle', 'pkl']:
         path = filename + ext
@@ -12,25 +15,17 @@ def find_pickle(filename):
             return path
     return None
 
-def load(variant_file, text_file, pickle_file):
-    path = find_pickle(pickle_file)
+def load(variant_filename, text_filename):
+    variant = pandas.read_csv(variant_filename)
+    text = pandas.read_csv(text_filename, sep='\|\|', header=None, skiprows=1, names=['ID', 'text'])
 
-    if path:
-        return pickle.load(open(path, 'rb'))
-
-    variant = pandas.read_csv(variant_file)
-    text = pandas.read_csv(text_file, sep = '\|\|', header = None, skiprows = 1, names = ['ID', 'text'])
-
-    tr = []
-
+    data = []
     for ID in variant['ID'].values:
-        item = { info: variant[info][ID] for info in variant.columns.values }
-        item['Text'] = text['text'][ID]
-        tr.append(item)
+        d = { info: variant[info][ID] for info in variant.columns.values }
+        d['text'] = text['text'][ID]
+        data.append(d)
 
-    pickle.dump(tr, open(pickle_file, 'wb'))
-
-    return tr
+    return data
 
 def paragraph_by_variant(data, window_size=0, unit='sentence', pickle_file=None, target_variant='__TARGET_VARIANT__', paragraph_end=' __PARAGRAPH_END__ '):
     if pickle_file:
@@ -46,15 +41,20 @@ def paragraph_by_variant(data, window_size=0, unit='sentence', pickle_file=None,
                 for j in range(max(i - window_size, 0), min(i + window_size + 1, len(s))):
                     d['text'] += s[j]
                 d['text'] += paragraph_end
-        print(d['text'])
 
-def remove_stopwords(tr):
+def remove_stop_words(data, pickle_filename=None):
+    if pickle_filename:
+        path = find_pickle(pickle_filename)
+        if path:
+            return pickle.load(open(path, 'rb'))
+
     stopwords_list = stopwords.words('english')
     pattern = re.compile(r'\b(' + r'|'.join(stopwords_list) + r')\b\s+')
-    for data in tr :
-        if 'Text' in data :
-            data['Text'] = pattern.sub("", data['Text'])
-    return None
+    for d in data:
+        d['text'] = pattern.sub('', d['text'])
+
+    if pickle_filename:
+        pickle.dump(data, open(pickle_filename, 'wb'))
 
 def replace_target_gene(tr):
     gene_alias_dict = pickle.load(open('./gene_alias.regex.pkl', 'r'))

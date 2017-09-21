@@ -11,7 +11,6 @@ from gensim.models.doc2vec import LabeledSentence
 
 from keras.preprocessing.text import text_to_word_sequence
 
-
 def svd(data, svder=None, input_field='tfidf', pickle_file=None, **kwargs):
     if pickle_file:
         path = preprocess.find_pickle(pickle_file)
@@ -26,7 +25,6 @@ def svd(data, svder=None, input_field='tfidf', pickle_file=None, **kwargs):
         d['svd'] = s
     return svder
 
-
 def tfidf(data, tfidfer=None, pickle_file=None, **kwargs):
     if pickle_file:
         path = preprocess.find_pickle(pickle_file)
@@ -40,7 +38,6 @@ def tfidf(data, tfidfer=None, pickle_file=None, **kwargs):
     for d, t in zip(data, tfidfed):
         d['tfidf'] = t
     return tfidfer
-
 
 def tfidf_sequential(data, tfidfer=None, pickle_file=None, **kwargs):
     if pickle_file:
@@ -62,7 +59,6 @@ def tfidf_sequential(data, tfidfer=None, pickle_file=None, **kwargs):
                 d['tfidf'].append(tfidfed[names.index(word)])
     return tfidfer
 
-
 def tfidf_SVD(data, l):
     sentences = [el['text'] for el in data]
     vect = TfidfVectorizer()
@@ -73,7 +69,6 @@ def tfidf_SVD(data, l):
     for _ in data:
         data[index]['tfidf_SVD'] = sentence_vectors[index]
         index = index + 1
-
 
 def doc2vec(data, l, model):
     label_sentences = []
@@ -98,3 +93,5 @@ def doc2vec(data, l, model):
         index = index + 1
     # all_encode = [text_model.docvecs['Text_' + str(i)] for i in range(l)]
     # return all_encode
+
+# vi:et:sw=4:ts=4
