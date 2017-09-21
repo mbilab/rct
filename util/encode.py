@@ -9,6 +9,20 @@ from gensim.models.doc2vec import LabeledSentence
 
 from keras.preprocessing.text import text_to_word_sequence
 
+def svd(data, svder=None, field='tfidf', pickle_file=None, **kwargs):
+    if pickle_file:
+        path = find_pickle(pickle_file)
+        if path:
+            return pickle.load(open(path, 'rb'))
+
+    X = [d[field] for d in data]
+    if not svder:
+        svder = TruncatedSVD(**kwargs)
+        svder.fit(X)
+    svded = svder.transform(X)
+    for d, s in zip(data, svded):
+        d['svd'] = s
+    return svder
 
 def use_tfidf(data):
     sentences = [el['text'] for el in data]
