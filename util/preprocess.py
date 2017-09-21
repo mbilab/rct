@@ -27,6 +27,18 @@ def load(variant_filename, text_filename):
 
     return data
 
+def normalize_gene(data):
+    gene_alias_dict = pickle.load(open('./gene_alias.regex.pkl', 'rb'))
+    #print(gene_alias_dict)
+    return
+    for item in tr:
+        text = item['text']
+        if not re.match('ID', text):
+            gene = text.split(',')[1]
+            if gene in gene_alias_dict:
+                text = re.sub(gene_alias_dict[gene], '$_TARGET_GENE_$', text)
+        item['text'] = text
+
 def paragraph_by_variant(data, window_size=0, unit='sentence', pickle_file=None, target_variant='__TARGET_VARIANT__', paragraph_end=' __PARAGRAPH_END__ '):
     if pickle_file:
         path = find_pickle(pickle_file)
