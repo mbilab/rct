@@ -1,8 +1,36 @@
 from nltk import sent_tokenize
-from os.path import isfile
-import re
-import nltk
 from nltk.corpus import stopwords
+from os.path import isfile
+import pandas
+import pickle
+import re
+
+def find_pickle(filename):
+    for ext in ['', '.pickle', 'pkl']:
+        path = filename + ext
+        if (isfile(path)):
+            return path
+    return None
+
+def load(variant_file, text_file, pickle_file):
+    path = find_pickle(pickle_file)
+
+    if path:
+        return pickle.load(open(path, 'rb'))
+
+    variant = pandas.read_csv(variant_file)
+    text = pandas.read_csv(text_file, sep = '\|\|', header = None, skiprows = 1, names = ['ID', 'text'])
+
+    tr = []
+
+    for ID in variant['ID'].values:
+        item = { info: variant[info][ID] for info in variant.columns.values }
+        item['Text'] = text['text'][ID]
+        tr.append(item)
+
+    pickle.dump(tr, open(pickle_file, 'wb'))
+
+    return tr
 
 def remove_stopwords(tr):
     stopwords_list = stopwords.words('english')
@@ -10,13 +38,6 @@ def remove_stopwords(tr):
     for data in tr :
         if 'Text' in data :
             data['Text'] = pattern.sub("", data['Text'])
-    return None
-
-def find_pickle(filename):
-    for ext in ['', '.pickle', 'pkl']:
-        path = filename + ext
-        if (isfile(path)):
-            return path
     return None
 
 def split_text_by_variant(data, window_size=1, unit='sentence', pickle_file=None):
@@ -64,7 +85,7 @@ def split_text_by_variant(data, window_size=1, unit='sentence', pickle_file=None
                     row += ' &_PARAGRAPH_END_& '
 
                 row += '\n'
-    
+
             sub_text_file.write(row)
         sub_text_file.close()
         '''
