@@ -39,6 +39,25 @@ def tfidf(data, tfidfer=None, pickle_file=None, **kwargs):
         d['tfidf'] = t
     return tfidfer
 
+def tfidf_sequential(data, tfidfer=None, pickle_file=None, **kwargs):
+    if pickle_file:
+        path = find_pickle(pickle_file)
+        if path:
+            return pickle.load(open(path, 'rb'))
+
+    X = [d['text'] for d in data]
+    #! cat all text and append it to X
+    if not tfidfer:
+        tfidfer = TfidfVectorizer(**kwargs)
+        tfidfer.fit(X)
+    tfidfed = tfidfer.transform(X)
+    #! now we use the tfidf of the last element in X
+    for d in data:
+        d['tfidf'] = []
+        #! for each term in d['text']
+        #!    d['tfidf'].append(tfidf of term according to X)
+    return tfidfer
+
 def tfidf_bobo(data):
     sentences = [el['text'] for el in data]
     vect = TfidfVectorizer()
