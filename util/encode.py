@@ -9,13 +9,13 @@ from gensim.models.doc2vec import LabeledSentence
 
 from keras.preprocessing.text import text_to_word_sequence
 
-def svd(data, svder=None, field='tfidf', pickle_file=None, **kwargs):
+def svd(data, svder=None, input_field='tfidf', pickle_file=None, **kwargs):
     if pickle_file:
         path = find_pickle(pickle_file)
         if path:
             return pickle.load(open(path, 'rb'))
 
-    X = [d[field] for d in data]
+    X = [d[input_field] for d in data]
     if not svder:
         svder = TruncatedSVD(**kwargs)
         svder.fit(X)
@@ -24,7 +24,22 @@ def svd(data, svder=None, field='tfidf', pickle_file=None, **kwargs):
         d['svd'] = s
     return svder
 
-def tfidf(data):
+def tfidf(data, tfidfer=None, pickle_file=None, **kwargs):
+    if pickle_file:
+        path = find_pickle(pickle_file)
+        if path:
+            return pickle.load(open(path, 'rb'))
+
+    X = [d['text'] for d in data]
+    if not tfidfer:
+        tfidfer = TfidfVectorizer(**kwargs)
+        tfidfer.fit(X)
+    tfidfed = tfidfer.transform(X)
+    for d, t in zip(data, tfidfed):
+        d['tfidf'] = t
+    return tfidfer
+
+def tfidf_bobo(data):
     sentences = [el['text'] for el in data]
     vect = TfidfVectorizer()
     X = vect.fit_transform(sentences)
