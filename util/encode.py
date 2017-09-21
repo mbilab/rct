@@ -24,7 +24,7 @@ def svd(data, svder=None, field='tfidf', pickle_file=None, **kwargs):
         d['svd'] = s
     return svder
 
-def use_tfidf(data):
+def tfidf(data):
     sentences = [el['text'] for el in data]
     vect = TfidfVectorizer()
     X = vect.fit_transform(sentences)
