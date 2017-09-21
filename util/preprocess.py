@@ -1,6 +1,16 @@
 from nltk import sent_tokenize
 from os.path import isfile
 import re
+import nltk
+from nltk.corpus import stopwords
+
+def remove_stopwords(tr):
+    stopwords_list = stopwords.words('english')
+    pattern = re.compile(r'\b(' + r'|'.join(stopwords_list) + r')\b\s+')
+    for data in tr :
+        if 'Text' in data :
+            data['Text'] = pattern.sub("", data['Text'])
+    return None
 
 def find_pickle(filename):
     for ext in ['', '.pickle', 'pkl']:
