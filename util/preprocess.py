@@ -32,21 +32,6 @@ def load(variant_file, text_file, pickle_file):
 
     return tr
 
-def remove_stopwords(tr):
-    stopwords_list = stopwords.words('english')
-    pattern = re.compile(r'\b(' + r'|'.join(stopwords_list) + r')\b\s+')
-    for data in tr :
-        if 'Text' in data :
-            data['Text'] = pattern.sub("", data['Text'])
-    return None
-
-def find_pickle(filename):
-    for ext in ['', '.pickle', 'pkl']:
-        path = filename + ext
-        if (isfile(path)):
-            return path
-    return None
-
 def paragraph_by_variant(data, window_size=0, unit='sentence', pickle_file=None, target_variant='__TARGET_VARIANT__', paragraph_end=' __PARAGRAPH_END__ '):
     if pickle_file:
         path = find_pickle(pickle_file)
@@ -62,5 +47,13 @@ def paragraph_by_variant(data, window_size=0, unit='sentence', pickle_file=None,
                     d['text'] += s[j]
                 d['text'] += paragraph_end
         print(d['text'])
+
+def remove_stopwords(tr):
+    stopwords_list = stopwords.words('english')
+    pattern = re.compile(r'\b(' + r'|'.join(stopwords_list) + r')\b\s+')
+    for data in tr :
+        if 'Text' in data :
+            data['Text'] = pattern.sub("", data['Text'])
+    return None
 
 # vi:et:sw=4:ts=4
