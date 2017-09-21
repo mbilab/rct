@@ -7,6 +7,7 @@ from gensim.models import Doc2Vec
 from gensim.models.doc2vec import LabeledSentence
 from gensim import utils
 
+from keras.preprocessing.text import text_to_word_sequence
 
 def tfidf_SVD(df_data, l):
     vect = TfidfVectorizer()
@@ -16,21 +17,27 @@ def tfidf_SVD(df_data, l):
     return sentence_vectors
 
 
-def d2v(df_data, l, model):
-    sentences = []
-    for index, row in df_data['Text'].iteritems():
-        sentences.append(LabeledSentence(utils.to_unicode(row).split(), \
-                         ['Text' + '_%s' % str(index)]))
+def doc2vec(data, l, model):
+    sentences = [el['text'] for el in data]
+    label_sentences = []
+    index = 0
+    for row in data:
+        label_sentences.append(LabeledSentence(text_to_word_sequence(row['text']), ['Text' + '_%s' % str(index)]))
+        index = index + 1
 
     if os.path.isfile(model):
         text_model = Doc2Vec.load(model)
     else:
-        text_model = Doc2Vec(min_count=1, window=5, size=l, sample=1e-4, \
+        text_model = Doc2Vec(min_count=1, window=5, size=l, sample=1e-4,
                              negative=5, workers=4, iter=5, seed=1)
-        text_model.build_vocab(sentences)
-        text_model.train(sentences, total_examples=text_model.corpus_count, \
+        text_model.build_vocab(label_sentences)
+        text_model.train(label_sentences, total_examples=text_model.corpus_count,
                          epochs=text_model.iter)
         text_model.save(model)
 
-    all_encode = [text_model.docvecs['Text_' + str(i)] for i in range(l)]
-    return all_encode
+    index = 0
+    for _ in data:
+        data[index]['d2v'] = text_model.docvecs['Text_' + str(index)]
+        index = index + 1
+    # all_encode = [text_model.docvecs['Text_' + str(i)] for i in range(l)]
+    # return all_encode
