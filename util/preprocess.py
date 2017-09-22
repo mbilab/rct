@@ -51,9 +51,9 @@ def paragraph_by_variation(data, window_size=0, unit='sentence', target_variatio
                     d['text'] += s[j]
                 d['text'] += paragraph_end
         if '' == d['text']:
-            print('no target variation found: %s' % (d['ID']))
-            d['text'] = d['sentences'][0] + paragraph_end
-        d['text'] = d['text'].rstrip()
+            #d['text'] = d['sentences'][0] + paragraph_end
+            d['text'] = 'No target variation found.'
+        d['text'] = re.sub(r'__TARGET_VARIATION__', d['Variation'], d['text']).rstrip()
 
 def remove_stop_words(data, pickle_filename=None):
     if pickle_filename:
@@ -114,6 +114,14 @@ def sentences(data, sentence_end=' __SENTENCE_END__ '):
     for d in data:
         d['sentences'] = []
         text = re.sub(r'\s\.([A-Z]\w+)', r'\s \1', d['text'])
-        d['sentences'] = [re.sub(r'\.?$', sentence_end, s).rstrip() for s in sent_tokenize(text)]
+        if sentence_end:
+            d['sentences'] = [re.sub(r'\.?$', sentence_end, s).rstrip() for s in sent_tokenize(text)]
+        else:
+            d['sentences'] = [s.rstrip() for s in sent_tokenize(text)]
+
+def to_csv(data, fields):
+    print(','.join(fields))
+    for d in data:
+        print(','.join([d[f] for f in fields]))
 
 # vi:et:sw=4:ts=4
