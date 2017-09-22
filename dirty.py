@@ -18,9 +18,9 @@ if '__main__' == __name__:
     #preprocess.sentences(tr)
     #preprocess.paragraph_by_variation(tr, window_size=0) # tr.p.pkl
     tr = pickle.load(open('tmp/tr.p.pkl', 'rb'))
-    #encode.tfidf_sequential(tr)
+    encode.tfidf_sequential(tr)
+    pickle.dump(tr, open('tmp/tr.ts.pkl', 'wb'))
     sys.exit(0)
-    pickle.dump(tr, open('tmp/tmp.pkl', 'wb'))
 #    tr['text'] = util.favorite(tr['text'], pickle='tr.pickle')
 #    tf['svd'] = encoding.svd(tr['tfidf'], 50)
 #    tf['d2v'] = encoding.doc2vec(tr, 50)

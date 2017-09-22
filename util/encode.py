@@ -1,15 +1,16 @@
 import os
 import pickle
 
-import preprocess.py
-
 from sklearn.decomposition import TruncatedSVD
 from sklearn.feature_extraction.text import TfidfVectorizer
 
-from gensim.models import Doc2Vec
-from gensim.models.doc2vec import LabeledSentence
+#from gensim.models import Doc2Vec
+#from gensim.models.doc2vec import LabeledSentence
 
-from keras.preprocessing.text import text_to_word_sequence
+#from keras.preprocessing.text import text_to_word_sequence
+
+def field_array(data, field):
+    return [d[field] for d in data]
 
 def svd(data, svder=None, input_field='tfidf', pickle_file=None, **kwargs):
     if pickle_file:
@@ -30,7 +31,7 @@ def tfidf(data, tfidfer=None, pickle_file=None, **kwargs):
         path = preprocess.find_pickle(pickle_file)
         if path:
             return pickle.load(open(path, 'rb'))
-    X = [d['text'] for d in data]
+    X = field_array(data, 'text')
     if not tfidfer:
         tfidfer = TfidfVectorizer(**kwargs)
         tfidfer.fit(X)
@@ -39,24 +40,19 @@ def tfidf(data, tfidfer=None, pickle_file=None, **kwargs):
         d['tfidf'] = t
     return tfidfer
 
-def tfidf_sequential(data, tfidfer=None, pickle_file=None, **kwargs):
-    if pickle_file:
-        path = preprocess.find_pickle(pickle_file)
-        if path:
-            return pickle.load(open(path, 'rb'))
-    X = [d['text'] for d in data]
-    # cat all text and append it to X
+def tfidf_sequential(data, tfidfer=None, **kwargs):
+    X = field_array(data, 'text')
+    X.append(' '.join(X))
     if not tfidfer:
         tfidfer = TfidfVectorizer(**kwargs)
         tfidfer.fit(X)
-    tfidfed = tfidfer.transform(X)
-    names = tfidfer.get_feature_names()
-    # now we use the tfidf of the last element in X
+    tfidfed = tfidfer.transform(X)[-1]
+    terms = tfidfer.get_feature_names()
     for d in data:
         d['tfidf'] = []
         for word in d['text'].split():
-            if word in names:
-                d['tfidf'].append(tfidfed[names.index(word)])
+            if word in terms:
+                d['tfidf'].append(tfidfed[0,terms.index(word)])
     return tfidfer
 
 def tfidf_SVD(data, l):

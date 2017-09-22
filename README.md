@@ -11,4 +11,7 @@ pip install sklearn
 pip install scipy
 pip install keras
 pip install tensorflow
+pip install pyyaml
+pip install gensim
+pip install nltk
 pip freeze
