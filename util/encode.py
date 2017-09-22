@@ -9,8 +9,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 
 #from keras.preprocessing.text import text_to_word_sequence
 
-def field_array(data, field):
-    return [d[field] for d in data]
+from util import field_array
 
 def svd(data, svder=None, input_field='tfidf', pickle_file=None, **kwargs):
     if pickle_file:
@@ -26,11 +25,7 @@ def svd(data, svder=None, input_field='tfidf', pickle_file=None, **kwargs):
         d['svd'] = s
     return svder
 
-def tfidf(data, tfidfer=None, pickle_file=None, **kwargs):
-    if pickle_file:
-        path = preprocess.find_pickle(pickle_file)
-        if path:
-            return pickle.load(open(path, 'rb'))
+def tfidf(data, tfidfer=None, **kwargs):
     X = field_array(data, 'text')
     if not tfidfer:
         tfidfer = TfidfVectorizer(**kwargs)
@@ -40,22 +35,27 @@ def tfidf(data, tfidfer=None, pickle_file=None, **kwargs):
         d['tfidf'] = t
     return tfidfer
 
-def tfidf_sequential(data, tfidf_map=None, **kwargs):
-    if not tfidf_map:
-        X = field_array(data, 'text')
-        X.append(' '.join(X))
-        tfidfer = TfidfVectorizer(**kwargs)
-        tfidfer.fit(X)
-        tfidf_map = {
-                'terms': tfidfer.get_feature_names(),
-                'values': tfidfer.transform(X)[-1],
-                }
+def tfidf_sequential(data, model):
     for d in data:
         d['tfidf'] = []
         for word in d['text'].split():
-            if word in tfidf_map['terms']:
-                d['tfidf'].append(tfidf_map['values'][0,tfidf_map['terms'].index(word)])
-    return tfidf_map
+            try:
+                d['tfidf'].append(model['values'][:,model['terms'].index(word)])
+            except ValueError:
+                pass
+
+def tfidf_sequential_fit(data, only_overall=True, **kwargs):
+    X = field_array(data, 'text')
+    X.append(' '.join(X))
+    tfidfer = TfidfVectorizer(**kwargs)
+    tfidfer.fit(X)
+    values = tfidfer.transform(X)
+    if only_overall:
+        values = values[-1]
+    return {
+            'terms': tfidfer.get_feature_names(),
+            'values': values,
+            }
 
 def tfidf_SVD(data, l):
     sentences = [el['text'] for el in data]

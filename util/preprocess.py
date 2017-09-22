@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 from nltk import sent_tokenize
 from nltk.corpus import stopwords
 import json
@@ -6,17 +8,8 @@ import pandas
 import pickle
 import re
 
+import util
 from util.variation import Variation
-
-def field_array(data, field):
-    return [d[field] for d in data]
-
-def find_pickle(filename):
-    for ext in ['', '.pickle', 'pkl']:
-        path = filename + ext
-        if (isfile(path)):
-            return path
-    return None
 
 def load(variant_filename, text_filename):
     variant = pandas.read_csv(variant_filename)
@@ -118,10 +111,5 @@ def sentences(data, sentence_end=' __SENTENCE_END__ '):
             d['sentences'] = [re.sub(r'\.?$', sentence_end, s).rstrip() for s in sent_tokenize(text)]
         else:
             d['sentences'] = [s.rstrip() for s in sent_tokenize(text)]
-
-def to_csv(data, fields):
-    print(','.join(fields))
-    for d in data:
-        print(','.join([d[f] for f in fields]))
 
 # vi:et:sw=4:ts=4
