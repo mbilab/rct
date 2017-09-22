@@ -1,6 +1,8 @@
 from nltk import sent_tokenize
 from nltk.corpus import stopwords
+import json
 from os.path import isfile
+from variation import Variation
 import pandas
 import pickle
 import re
@@ -39,20 +41,19 @@ def normalize_gene(data):
                 text = re.sub(gene_alias_dict[gene], '$_TARGET_GENE_$', text)
         item['text'] = text
 
-def paragraph_by_variant(data, window_size=0, unit='sentence', pickle_file=None, target_variant='__TARGET_VARIANT__', paragraph_end=' __PARAGRAPH_END__ '):
-    if pickle_file:
-        path = find_pickle(pickle_file)
-        if path:
-            return pickle.load(open(path, 'rb'))
-
+def paragraph_by_variation(data, window_size=0, unit='sentence', target_variation='__TARGET_VARIATION__', paragraph_end=' __PARAGRAPH_END__ '):
     for d in data:
         d['text'] = ''
         s = d['sentences']
         for i in range(len(s)):
-            if -1 != s[i].find(target_variant):
+            if -1 != s[i].find(target_variation):
                 for j in range(max(i - window_size, 0), min(i + window_size + 1, len(s))):
                     d['text'] += s[j]
                 d['text'] += paragraph_end
+        if '' == d['text']:
+            print('no target variation found: %s' % (d['ID']))
+            d['text'] = d['sentences'][0] + paragraph_end
+        d['text'] = d['text'].rstrip()
 
 def remove_stop_words(data, pickle_filename=None):
     if pickle_filename:
@@ -78,32 +79,24 @@ def replace_target_gene(tr):
                 text = re.sub(gene_alias_dict[gene], '$_TARGET_GENE_$', text)
         item['text'] = text
 
-def convertVariation(raw_text, variation, alternate_string):
-    amino_acid_dict = pickle.load(open('./amino_acid_dict.pkl', 'r'))
-    variation_info = re.findall('^([A-Za-z])(\d+)([A-Za-z])$', variation)
-
-    if variation_info:
-        original_amino, position, final_amino = variation_info[0]
-
-        variation_list = []
-        for o_amino in amino_acid_dict[original_amino]:
-            for f_amino in amino_acid_dict[final_amino]:
-                variation_list.append(o_amino + position + f_amino)
-
-        variation = '(%s)' % '|'.join(variation_list)
-
-    else:
-        variation = re.escape(variation)
-
-    return re.sub(variation, alternate_string, raw_text)
-
-def replace_target_variant(tr):
-    for item in tr:
-        text = item['text']
-        if not re.match('ID', text):
-            variation = text.split(',')[3]
-            text = convertVariation(text, variation, '$_TARGET_VARIATION_$')
-        item['text'] = text
+def replace_target_variation(data, target_variation=None):
+    varalias = json.load(open('one2many.json'))
+    for d in data:
+        v = Variation(d['Variation'])
+        if 'point' == v.type:
+            starts = [v.start_amino] + varalias[v.start_amino.upper()]
+            if '*' == v.end_amino:
+                aliases = ['%s%sX'  % (s, v.pos) for s in starts]
+            elif '' == v.end_amino:
+                aliases = ["%s%s"   % (s, v.pos) for s in starts]
+            else:
+                aliases = ["%s%s%s" % (s, v.pos, e) for s in starts for e in [v.end_amino] + varalias[v.end_amino.upper()]]
+            if target_variation:
+                d['text'] = re.sub('%s' % '|'.join(aliases), target_variation, d['text'], flags=re.IGNORECASE)
+            else:
+                d['text'] = re.sub('%s' % '|'.join(aliases), v.var, d['text'], flags=re.IGNORECASE)
+        elif target_variation:
+            d['text'] = re.sub(v.var, target_variation, d['text'], flags=re.IGNORECASE)
 
 def replace_classified_variant(tr):
     answer_dict = pickle.load(open('./answer_dict.pkl', 'r'))
@@ -116,5 +109,11 @@ def replace_classified_variant(tr):
                     answer = answer_dict[gene][variation]
                     text = convertVariation(text, variation, answer)
         item['text'] = text
+
+def sentences(data, sentence_end=' __SENTENCE_END__ '):
+    for d in data:
+        d['sentences'] = []
+        text = re.sub(r'\s\.([A-Z]\w+)', r'\s \1', d['text'])
+        d['sentences'] = [re.sub(r'\.?$', sentence_end, s).rstrip() for s in sent_tokenize(text)]
 
 # vi:et:sw=4:ts=4
