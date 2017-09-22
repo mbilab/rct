@@ -41,6 +41,20 @@ def normalize_gene(data):
                 text = re.sub(gene_alias_dict[gene], '$_TARGET_GENE_$', text)
         item['text'] = text
 
+def normalize_target_variation(data):
+    aa_alias = json.load(open('one2many.json'))
+    for d in data:
+        v = Variation(d['Variation'])
+        if 'point' == v.type:
+            starts = [v.start_amino] + aa_alias[v.start_amino.upper()]
+            if '*' == v.end_amino:
+                aliases = ['%s%sX'  % (s, v.pos) for s in starts]
+            elif '' == v.end_amino:
+                aliases = ["%s%s"   % (s, v.pos) for s in starts]
+            else:
+                aliases = ["%s%s%s" % (s, v.pos, e) for s in starts for e in [v.end_amino] + aa_alias[v.end_amino.upper()]]
+            d['text'] = re.sub('%s' % '|'.join(aliases), v.var, d['text'], flags=re.IGNORECASE)
+
 def paragraph_by_variation(data, window_size=0, unit='sentence', target_variation='__TARGET_VARIATION__', paragraph_end=' __PARAGRAPH_END__ '):
     for d in data:
         d['text'] = ''
@@ -79,24 +93,9 @@ def replace_target_gene(tr):
                 text = re.sub(gene_alias_dict[gene], '$_TARGET_GENE_$', text)
         item['text'] = text
 
-def replace_target_variation(data, target_variation=None):
-    varalias = json.load(open('one2many.json'))
+def replace_text(data, in_field=None, to_str=None):
     for d in data:
-        v = Variation(d['Variation'])
-        if 'point' == v.type:
-            starts = [v.start_amino] + varalias[v.start_amino.upper()]
-            if '*' == v.end_amino:
-                aliases = ['%s%sX'  % (s, v.pos) for s in starts]
-            elif '' == v.end_amino:
-                aliases = ["%s%s"   % (s, v.pos) for s in starts]
-            else:
-                aliases = ["%s%s%s" % (s, v.pos, e) for s in starts for e in [v.end_amino] + varalias[v.end_amino.upper()]]
-            if target_variation:
-                d['text'] = re.sub('%s' % '|'.join(aliases), target_variation, d['text'], flags=re.IGNORECASE)
-            else:
-                d['text'] = re.sub('%s' % '|'.join(aliases), v.var, d['text'], flags=re.IGNORECASE)
-        elif target_variation:
-            d['text'] = re.sub(v.var, target_variation, d['text'], flags=re.IGNORECASE)
+        d['text'] = re.sub(d[in_field], to_str, d['text'])
 
 def replace_classified_variant(tr):
     answer_dict = pickle.load(open('./answer_dict.pkl', 'r'))

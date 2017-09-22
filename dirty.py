@@ -40,25 +40,23 @@ def train(data):
 
 if '__main__' == __name__:
     tr = {}
-    te = {}
-    #tr = preprocess.load('src/training_variants', 'src/training_text') # tr.pkl
-    #te = preprocess.load('src/test_variants', 'src/test_text') # te.pkl
-    #pickle.dump(te, open('tmp/te.pkl', 'wb'))
-    #preprocess.remove_stop_words(tr) # tr.rsw.pkl
+    #tr = preprocess.load('src/training_variants', 'src/training_text') # {tr,te,tte}.pkl
+    #pickle.dump(tr, open('tmp/tr.pkl', 'wb'))
+    #preprocess.remove_stop_words(tr) # *.rsw.pkl
     #tr = pickle.load(open('tmp/tr.rsw.pkl', 'rb'))
     #preprocess.normalize_gene(tr) # not yet
-    #preprocess.normalize_variant(tr) # not yet
-    #preprocess.replace_target_gene(tr) # not yet
-    #preprocess.replace_target_variation(te, '__TARGET_VARIATION__')
+    #preprocess.replace_text(tr, in_field='Gene', to_str=' __TARGET_GENE__ ')
+    #preprocess.normalize_target_variation(tr)
+    #preprocess.replace_text(tr, in_field='Variation', to_str=' __TARGET_VARIATION__ ')
     #preprocess.replace_classified_variant(tr) # not yet
-    #preprocess.sentences(te, None)
-    #preprocess.paragraph_by_variation(te, 0, paragraph_end=' ') # tr.p.pkl
-    #for d in te:
-    #    d['ID'] = str(d['ID'])
-    #preprocess.to_csv(te, ['ID', 'Gene', 'Variation', 'text'])
-    #sys.exit(0)
-    #encode.tfidf_sequential(tr) # tr.ts.pkl, different length
-    tr = pickle.load(open('tmp/tr.ts.pkl', 'rb'))
+    #preprocess.sentences(tr)
+    #preprocess.paragraph_by_variation(tr, 0) # *.p.pkl
+    tr = pickle.load(open('tmp/tr.p.pkl', 'rb'))
+    te = pickle.load(open('tmp/te.p.pkl', 'rb'))
+    tfidf_map = encode.tfidf_sequential(tr) # tr.ts.pkl, different length
+    pickle.dump(tr, open('tmp/tr.ts.pkl', 'wb'))
+    encode.tfidf_sequential(te, tfidf_map)
+    pickle.dump(te, open('tmp/te.ts.pkl', 'wb'))
     sys.exit(0)
 #    tr['text'] = util.favorite(tr['text'], pickle='tr.pickle')
 #    tf['svd'] = encoding.svd(tr['tfidf'], 50)
