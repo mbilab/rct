@@ -2,10 +2,11 @@ from nltk import sent_tokenize
 from nltk.corpus import stopwords
 import json
 from os.path import isfile
-from variation import Variation
 import pandas
 import pickle
 import re
+
+from util.variation import Variation
 
 def field_array(data, field):
     return [d[field] for d in data]
