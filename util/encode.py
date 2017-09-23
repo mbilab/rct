@@ -1,6 +1,7 @@
 import os
 import pickle
 
+from scipy.sparse.csr import csr_matrix
 from sklearn.decomposition import TruncatedSVD
 from sklearn.feature_extraction.text import TfidfVectorizer
 
@@ -10,6 +11,21 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 #from keras.preprocessing.text import text_to_word_sequence
 
 from util import field_array
+
+def sparse_clean(data, field='tfidf', tolerance=0.01):
+    o = 0
+    n = 0
+    if isinstance(data[0][field][0], csr_matrix):
+        for d in data:
+            o += len(d[field])
+            d[field] = [v for v in d[field] if max(v) >= tolerance]
+            n += len(d[field])
+    else:
+        for d in data:
+            o += len(d[field])
+            d[field] = [v for v in d[field] if v >= tolerance]
+            n += len(d[field])
+    print('sparse clean (<%s) from %s to %s terms' % (tolerance, o, n))
 
 def svd(data, svder=None, input_field='tfidf', pickle_file=None, **kwargs):
     if pickle_file:

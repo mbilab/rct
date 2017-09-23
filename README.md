@@ -1,9 +1,15 @@
 # compiled data
 stored in ~dirty/rct/tmp/
-{tr,te,tte}.ts.pkl # tfidf-sequential, 1D for one word
-{tr,te,tte}.c.ts.pkl # tficf-sequential, 10D for one word
-  * 'icf' indicates inverse class frequency
+{tr,te,tte}.ts.pkl # tfidf sequential, 1D for one word
+  * tr: training (3321)
+  * te: test
+  * tte: true test (336)
+  * ts: tfidf sequential
+{tr,te,tte}.c.ts.pkl # tficf sequential, 10D for one word
+  * icf: inverse class frequency
   * 9D for nine class tfidf; 1D for overall tfidf
+{tr.te,tte}(.c).ts.sc005.pkl # clean terms with tfidf < 0.05
+  * sc: indicates sparse clean
 
 # env
 mkdir rct

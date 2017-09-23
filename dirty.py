@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 
+'''
 from keras.callbacks import ModelCheckpoint
 from keras.layers import BatchNormalization, Conv1D, Dense, Dropout, GlobalAveragePooling1D, MaxPooling1D
 from keras.models import Sequential, load_model
 from keras.preprocessing.sequence import pad_sequences
 from keras.utils import np_utils
+'''
 import sys
 
 from util import encode, load, preprocess, save, tick
@@ -61,21 +63,25 @@ if '__main__' == __name__:
     #save(tr, 'tmp/tr.pbvw0.pkl')
 
     #tr = load('tmp/tr.pbvw0.pkl')
-    #tsm = encode.tfidf_sequential_model(tr) # tr.tsm.pkl, 0:00:04.937104
+    #tsm = encode.tfidf_sequential_model(tr) # *.tsm.pkl, 0:00:04.937104
     #save(tsm, 'tmp/tr.tsm.pkl')
 
     #tr = load('tmp/tr.pbvw0.pkl')
     #c = preprocess.concatenate(tr) # 0:00:00.530155
-    #tsm = encode.tfidf_sequential_model(c, False) # tr.c.tsm.pkl, 0:00:02.323202
+    #tsm = encode.tfidf_sequential_model(c, False) # *.c.tsm.pkl, 0:00:02.323202
     #save(tsm, 'tmp/tr.c.tsm.pkl')
 
-    #tsm = load('tmp/tr.tsm.pkl') # use tr(.c).tsm.pkl
+    #tsm = load('tmp/tr.tsm.pkl') # use *(.c).tsm.pkl
     #tr = load('tmp/tr.pbvw0.pkl')
-    #encode.tfidf_sequential(tr, tsm) # tr(.c).ts.pkl, 0:08:12.010365
+    #encode.tfidf_sequential(tr, tsm) # *(.c).ts.pkl, 0:08:12.010365
     #save(tr, 'tmp/tr.ts.pkl')
     #tr = load('tmp/te.pbvw0.pkl')
     #encode.tfidf_sequential(tr, tsm)
     #save(tr, 'tmp/te.ts.pkl')
+
+    #tr = load('tmp/tr.ts.pkl')
+    #encode.sparse_clean(tr, 'tfidf', 0.05) # *(.c).ts.sc*.pkl, 0:07:57.079560
+    #save(tr, 'tmp/tr.ts.sc005.pkl')
 
     #te = load('tmp/te.c.ts.pkl')
     #tte = load('src/trueTstTotal.pkl')
