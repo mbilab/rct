@@ -5,10 +5,9 @@ from keras.layers import BatchNormalization, Conv1D, Dense, Dropout, GlobalAvera
 from keras.models import Sequential, load_model
 from keras.preprocessing.sequence import pad_sequences
 from keras.utils import np_utils
-import pickle
 import sys
 
-from util import encode, preprocess, save, tick
+from util import encode, load, preprocess, save, tick
 
 def train(data):
     X = preprocess.field_array(data, 'tfidf')
@@ -45,41 +44,46 @@ def train(data):
 if '__main__' == __name__:
 
     #tr = preprocess.load('src/training_variants', 'src/training_text') # {tr,te,tte}.pkl, 0:00:01.341790
-    #pickle.dump(tr, open('tmp/tr.pkl', 'wb'))
+    #save(tr, 'tmp/tr.pkl')
 
-    #tr = pickle.load(open('tmp/tr.pkl', 'rb'))
+    #tr = load('tmp/tr.pkl')
     #preprocess.remove_stop_words(tr) # *.rsw.pkl, 0:00:44.942251
-    #pickle.dump(tr, open('tmp/tr.rsw.pkl', 'wb'))
+    #save(tr, 'tmp/tr.rsw.pkl')
 
-    #tr = pickle.load(open('tmp/te.rsw.pkl', 'rb'))
+    #tr = load('tmp/te.rsw.pkl')
     #preprocess.normalize_target_variation(tr) # 0:00:11.831447
     #preprocess.replace_text(tr, in_field='Variation', to_str=' __TARGET_VARIATION__ ') # 0:00:00.419632
     #preprocess.sentences(tr) # *.s.pkl, 0:01:15.682816
-    #pickle.dump(tr, open('tmp/te.s.pkl', 'wb'))
+    #save(tr, 'tmp/te.s.pkl'))
 
-    #tr = pickle.load(open('tmp/tr.s.pkl', 'rb'))
+    #tr = load('tmp/tr.s.pkl')
     #preprocess.paragraph_by_variation(tr, 0) # *.pbvw*.pkl, 0:00:00.929176
-    #pickle.dump(tr, open('tmp/tr.pbvw0.pkl', 'wb'))
+    #save(tr, 'tmp/tr.pbvw0.pkl')
 
-    #tr = pickle.load(open('tmp/tr.pbvw0.pkl', 'rb'))
+    #tr = load('tmp/tr.pbvw0.pkl')
     #tsm = encode.tfidf_sequential_model(tr) # tr.tsm.pkl, 0:00:04.937104
-    #pickle.dump(tsm, open('tmp/tr.tsm.pkl', 'wb'))
+    #save(tsm, 'tmp/tr.tsm.pkl')
 
-    #tr = pickle.load(open('tmp/tr.pbvw0.pkl', 'rb'))
+    #tr = load('tmp/tr.pbvw0.pkl')
     #c = preprocess.concatenate(tr) # 0:00:00.530155
     #tsm = encode.tfidf_sequential_model(c, False) # tr.c.tsm.pkl, 0:00:02.323202
-    #pickle.dump(tsm, open('tmp/tr.c.tsm.pkl', 'wb'))
+    #save(tsm, 'tmp/tr.c.tsm.pkl')
 
-    #tsm = pickle.load(open('tmp/tr.tsm.pkl', 'rb')) # use tr.{tsm,c.tsm}.pkl
-    #tr = pickle.load(open('tmp/tr.pbvw0.pkl', 'rb'))
-    #encode.tfidf_sequential(tr, tsm) # tr.ts.pkl, 0:08:12.010365
+    #tsm = load('tmp/tr.tsm.pkl') # use tr(.c).tsm.pkl
+    #tr = load('tmp/tr.pbvw0.pkl')
+    #encode.tfidf_sequential(tr, tsm) # tr(.c).ts.pkl, 0:08:12.010365
     #save(tr, 'tmp/tr.ts.pkl')
-    #tr = pickle.load(open('tmp/te.pbvw0.pkl', 'rb'))
+    #tr = load('tmp/te.pbvw0.pkl')
     #encode.tfidf_sequential(tr, tsm)
     #save(tr, 'tmp/te.ts.pkl')
 
-    #tr = pickle.load(open('tmp/tr.ts.pkl', 'rb'))
-    #te = pickle.load(open('tmp/te.ts.pkl', 'rb'))
+    #te = load('tmp/te.c.ts.pkl')
+    #tte = load('src/trueTstTotal.pkl')
+    #te = preprocess.subset(te, tte) # tte(.c).ts.pkl, 0:00:00.180169
+    #save(te, 'tmp/tte.c.ts.pkl')
+
+    #tr = load('tmp/tr.ts.pkl')
+    #te = load('tmp/te.ts.pkl')
     #train(tr)
 
 #   preprocess.normalize_gene(tr) # not yet

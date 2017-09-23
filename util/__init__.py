@@ -1,14 +1,17 @@
 from datetime import datetime
 from os.path import isfile
-from pickle import dump
+import pickle
 
 def field_array(data, field):
     return [d[field] for d in data]
 
+def load(filename):
+    return pickle.load(open(filename, 'rb'))
+
 def save(data, filename):
     if isfile(filename):
         raise FileExistsError('%s existed, please delete it manually before saving' % (filename))
-    dump(data, open(filename, 'wb'))
+    pickle.dump(data, open(filename, 'wb'))
     print('%s saved' % (filename))
 
 def tick(last=None):

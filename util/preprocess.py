@@ -32,18 +32,6 @@ def load(variant_filename, text_filename):
 
     return data
 
-def normalize_gene(data):
-    gene_alias_dict = pickle.load(open('./gene_alias.regex.pkl', 'rb'))
-    #print(gene_alias_dict)
-    return
-    for item in tr:
-        text = item['text']
-        if not re.match('ID', text):
-            gene = text.split(',')[1]
-            if gene in gene_alias_dict:
-                text = re.sub(gene_alias_dict[gene], '$_TARGET_GENE_$', text)
-        item['text'] = text
-
 def normalize_target_variation(data):
     aa_alias = json.load(open('one2many.json'))
     for d in data:
@@ -86,6 +74,50 @@ def remove_stop_words(data, pickle_filename=None):
     if pickle_filename:
         pickle.dump(data, open(pickle_filename, 'wb'))
 
+def replace_text(data, in_field=None, to_str=None):
+    for d in data:
+        d['text'] = re.sub(d[in_field], to_str, d['text'])
+
+def sentences(data, sentence_end=' __SENTENCE_END__ '):
+    for d in data:
+        d['sentences'] = []
+        text = re.sub(r'\s\.([A-Z]\w+)', r'\s \1', d['text'])
+        if sentence_end:
+            d['sentences'] = [re.sub(r'\.?$', sentence_end, s).rstrip() for s in sent_tokenize(text)]
+        else:
+            d['sentences'] = [s.rstrip() for s in sent_tokenize(text)]
+
+def subset(data, sub_data, sub_fields=['Class'], key_fields=['Gene', 'Variation']):
+    keys = []
+    for d in sub_data:
+        key = '__'.join([d[f] for f in key_fields])
+        keys.append(key)
+    new_data = []
+    for d in data:
+        key = '__'.join([d[f] for f in key_fields])
+        try:
+            i = keys.index(key)
+            for f in sub_fields:
+                d[f] = sub_data[i][f]
+            new_data.append(d)
+        except:
+            pass
+    return new_data
+
+################################################################################
+
+def normalize_gene(data):
+    gene_alias_dict = pickle.load(open('./gene_alias.regex.pkl', 'rb'))
+    #print(gene_alias_dict)
+    return
+    for item in tr:
+        text = item['text']
+        if not re.match('ID', text):
+            gene = text.split(',')[1]
+            if gene in gene_alias_dict:
+                text = re.sub(gene_alias_dict[gene], '$_TARGET_GENE_$', text)
+        item['text'] = text
+
 def replace_target_gene(tr):
     gene_alias_dict = pickle.load(open('./gene_alias.regex.pkl', 'r'))
     for item in tr:
@@ -95,10 +127,6 @@ def replace_target_gene(tr):
             if gene in gene_alias_dict:
                 text = re.sub(gene_alias_dict[gene], '$_TARGET_GENE_$', text)
         item['text'] = text
-
-def replace_text(data, in_field=None, to_str=None):
-    for d in data:
-        d['text'] = re.sub(d[in_field], to_str, d['text'])
 
 def replace_classified_variant(tr):
     answer_dict = pickle.load(open('./answer_dict.pkl', 'r'))
@@ -111,14 +139,5 @@ def replace_classified_variant(tr):
                     answer = answer_dict[gene][variation]
                     text = convertVariation(text, variation, answer)
         item['text'] = text
-
-def sentences(data, sentence_end=' __SENTENCE_END__ '):
-    for d in data:
-        d['sentences'] = []
-        text = re.sub(r'\s\.([A-Z]\w+)', r'\s \1', d['text'])
-        if sentence_end:
-            d['sentences'] = [re.sub(r'\.?$', sentence_end, s).rstrip() for s in sent_tokenize(text)]
-        else:
-            d['sentences'] = [s.rstrip() for s in sent_tokenize(text)]
 
 # vi:et:sw=4:ts=4
