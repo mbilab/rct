@@ -8,9 +8,14 @@ def field_array(data, field):
 def load(filename):
     return pickle.load(open(filename, 'rb'))
 
-def save(data, filename):
-    if isfile(filename):
+def save(data, filename, X_field=None, y_field=None, force=False):
+    if isfile(filename) and not force:
         raise FileExistsError('%s existed, please delete it manually before saving' % (filename))
+    if X_field:
+        if y_field:
+            data = [{ 'X': d[X_field], 'y': d[y_field] } for d in data]
+        else:
+            data = [{ 'X': d[X_field] } for d in data]
     pickle.dump(data, open(filename, 'wb'))
     print('%s saved' % (filename))
 

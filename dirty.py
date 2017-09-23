@@ -74,14 +74,14 @@ if '__main__' == __name__:
     #tsm = load('tmp/tr.tsm.pkl') # use *(.c).tsm.pkl
     #tr = load('tmp/tr.pbvw0.pkl')
     #encode.tfidf_sequential(tr, tsm) # *(.c).ts.pkl, 0:08:12.010365
-    #save(tr, 'tmp/tr.ts.pkl')
+    #save(tr, 'tmp/tr.ts.pkl', 'tfidf', 'Class')
     #tr = load('tmp/te.pbvw0.pkl')
     #encode.tfidf_sequential(tr, tsm)
-    #save(tr, 'tmp/te.ts.pkl')
+    #save(tr, 'tmp/te.ts.pkl', 'tfidf', 'Class')
 
     #tr = load('tmp/tr.ts.pkl')
     #encode.sparse_clean(tr, 'tfidf', 0.05) # *(.c).ts.sc*.pkl, 0:07:57.079560
-    #save(tr, 'tmp/tr.ts.sc005.pkl')
+    #save(tr, 'tmp/tr.ts.sc005.pkl', 'tfidf', 'Class')
 
     #te = load('tmp/te.c.ts.pkl')
     #tte = load('src/trueTstTotal.pkl')
