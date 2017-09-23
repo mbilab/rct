@@ -1,3 +1,11 @@
+# compiled data
+stored in ~dirty/rct/tmp/
+{tr,te,tte}.ts.pkl # tfidf-sequential, 1D for one word
+{tr,te,tte}.c.ts.pkl # tficf-sequential, 10D for one word
+  * 'icf' indicates inverse class frequency
+  * 9D for nine class tfidf; 1D for overall tfidf
+
+# env
 mkdir rct
 cd rct/
 git init
