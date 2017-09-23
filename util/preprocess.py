@@ -3,13 +3,22 @@
 from nltk import sent_tokenize
 from nltk.corpus import stopwords
 import json
-from os.path import isfile
 import pandas
 import pickle
 import re
 
-import util
+from util import field_array
 from util.variation import Variation
+
+def concatenate(data, by_field='Class'):
+    fields = field_array(data, by_field)
+    fields = sorted(set(fields))
+    field_to_index = { v: i for i, v in enumerate(fields) }
+    c = [{ 'text': '' } for v in fields]
+    for d in data:
+        index = field_to_index[d[by_field]]
+        c[index]['text'] += d['text'] + ' '
+    return c
 
 def load(variant_filename, text_filename):
     variant = pandas.read_csv(variant_filename)

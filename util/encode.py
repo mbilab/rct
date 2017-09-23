@@ -44,7 +44,7 @@ def tfidf_sequential(data, model):
             except ValueError:
                 pass
 
-def tfidf_sequential_fit(data, only_overall=True, **kwargs):
+def tfidf_sequential_model(data, only_overall=True, **kwargs):
     X = field_array(data, 'text')
     X.append(' '.join(X))
     tfidfer = TfidfVectorizer(**kwargs)

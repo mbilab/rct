@@ -8,7 +8,7 @@ from keras.utils import np_utils
 import pickle
 import sys
 
-from util import encode, preprocess, tick
+from util import encode, preprocess, save, tick
 
 def train(data):
     X = preprocess.field_array(data, 'tfidf')
@@ -58,17 +58,25 @@ if '__main__' == __name__:
     #pickle.dump(tr, open('tmp/te.s.pkl', 'wb'))
 
     #tr = pickle.load(open('tmp/tr.s.pkl', 'rb'))
-    #preprocess.paragraph_by_variation(tr, 0) # 0:00:00.929176, *.pbvw*.pkl
+    #preprocess.paragraph_by_variation(tr, 0) # *.pbvw*.pkl, 0:00:00.929176
     #pickle.dump(tr, open('tmp/tr.pbvw0.pkl', 'wb'))
 
     #tr = pickle.load(open('tmp/tr.pbvw0.pkl', 'rb'))
-    #tsf = encode.tfidf_sequential_fit(tr) # tr.tsf.pkl, 0:00:04.937104
-    #pickle.dump(tsf, open('tmp/tr.tsf.pkl', 'wb'))
+    #tsm = encode.tfidf_sequential_model(tr) # tr.tsm.pkl, 0:00:04.937104
+    #pickle.dump(tsm, open('tmp/tr.tsm.pkl', 'wb'))
 
     #tr = pickle.load(open('tmp/tr.pbvw0.pkl', 'rb'))
-    #tsf = pickle.load(open('tmp/tr.tsf.pkl', 'rb'))
-    #encode.tfidf_sequential(tr, tsf) # tr.ts.pkl, 0:08:12.010365
-    #pickle.dump(tr, open('tmp/tr.ts.pkl', 'wb'))
+    #c = preprocess.concatenate(tr) # 0:00:00.530155
+    #tsm = encode.tfidf_sequential_model(c, False) # tr.c.tsm.pkl, 0:00:02.323202
+    #pickle.dump(tsm, open('tmp/tr.c.tsm.pkl', 'wb'))
+
+    #tsm = pickle.load(open('tmp/tr.tsm.pkl', 'rb')) # use tr.{tsm,c.tsm}.pkl
+    #tr = pickle.load(open('tmp/tr.pbvw0.pkl', 'rb'))
+    #encode.tfidf_sequential(tr, tsm) # tr.ts.pkl, 0:08:12.010365
+    #save(tr, 'tmp/tr.ts.pkl')
+    #tr = pickle.load(open('tmp/te.pbvw0.pkl', 'rb'))
+    #encode.tfidf_sequential(tr, tsm)
+    #save(tr, 'tmp/te.ts.pkl')
 
     #tr = pickle.load(open('tmp/tr.ts.pkl', 'rb'))
     #te = pickle.load(open('tmp/te.ts.pkl', 'rb'))
