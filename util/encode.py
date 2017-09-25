@@ -13,7 +13,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from util import field_array
 
 def dummy_sequential(data, term_value, tolerance=0):
-    terms = []
+    terms = ['']
     for i in range(len(term_value['terms'])):
         if term_value['values'][0,i] >= tolerance:
             terms.append(term_value['terms'][i])

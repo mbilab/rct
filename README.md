@@ -29,4 +29,5 @@ pip install pyyaml
 pip install gensim
 pip install nltk
 pip install datetime
+pip install h5py
 pip freeze
