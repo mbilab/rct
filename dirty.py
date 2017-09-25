@@ -95,7 +95,9 @@ if '__main__' == __name__:
     #tsm = encode.tfidf_sequential_model(c, False) # 0:00:02.323202
 
     #encode.tfidf_sequential(tr, tsm) # *(.c).ts.pkl, 0:08:12.010365
-    #util.save(tr, 'tmp/tr.c.ts.pkl', 'tfidf', 'Class')
+    #util.save(tr, 'tmp/tr.ts.pkl', 'tfidf', 'Class')
+    tr = util.load('tmp/tr.c.ts.pkl')
+    print(tr[1]['X'])
 
     #tr = util.load('tmp/tr.pbvw0.pkl')
     #encode.dummy_sequential(tr, term_value=tsm) # *.ds.pkl, 0:03:46.821351
