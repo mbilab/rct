@@ -12,6 +12,20 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 
 from util import field_array
 
+def dummy_sequential(data, term_value, tolerance=0):
+    terms = []
+    for i in range(len(term_value['terms'])):
+        if term_value['values'][0,i] >= tolerance:
+            terms.append(term_value['terms'][i])
+    for d in data:
+        d['dummy'] = []
+        for term in term_value['tokenizer'](d['text'].lower()):
+            try:
+                i = terms.index(term)
+                d['dummy'].append(i)
+            except ValueError:
+                pass
+
 def sparse_clean(data, field='tfidf', tolerance=0.01):
     o = 0
     n = 0
@@ -51,12 +65,13 @@ def tfidf(data, tfidfer=None, **kwargs):
         d['tfidf'] = t
     return tfidfer
 
-def tfidf_sequential(data, model):
+def tfidf_sequential(data, term_value):
     for d in data:
         d['tfidf'] = []
-        for word in d['text'].split():
+        for term in term_value['tokenizer'](d['text'].lower()):
             try:
-                d['tfidf'].append(model['values'][:,model['terms'].index(word)])
+                i = term_value['terms'].index(term)
+                d['tfidf'].append(term_value['values'][:,i])
             except ValueError:
                 pass
 
@@ -69,7 +84,9 @@ def tfidf_sequential_model(data, only_overall=True, **kwargs):
     if only_overall:
         values = values[-1]
     return {
+            'max': values.max(),
             'terms': tfidfer.get_feature_names(),
+            'tokenizer': tfidfer.build_tokenizer(),
             'values': values,
             }
 

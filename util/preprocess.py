@@ -56,9 +56,9 @@ def paragraph_by_variation(data, window_size=0, unit='sentence', target_variatio
                     d['text'] += s[j]
                 d['text'] += paragraph_end
         if '' == d['text']:
-            #d['text'] = d['sentences'][0] + paragraph_end
-            d['text'] = 'No target variation found.'
-        d['text'] = re.sub(r'__TARGET_VARIATION__', d['Variation'], d['text']).rstrip()
+            #d['text'] = 'No target variation found.'
+            d['text'] = d['sentences'][0] + paragraph_end
+        #d['text'] = re.sub(r'__TARGET_VARIATION__', d['Variation'], d['text']).rstrip()
 
 def remove_stop_words(data, pickle_filename=None):
     if pickle_filename:
