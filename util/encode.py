@@ -26,7 +26,7 @@ def dummy_sequential(data, term_value, tolerance=0):
             except ValueError:
                 pass
 
-def sparse_clean(data, field='tfidf', tolerance=0.01):
+def sparse_clean(data, tolerance=0.01, field='X'):
     o = 0
     n = 0
     if isinstance(data[0][field][0], csr_matrix):

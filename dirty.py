@@ -2,11 +2,12 @@
 
 opts = {
     'batch_size': 0.8,
-    'embedding_size': 8,
+    'embedding_size': 32,
     'epochs': 100000,
     'lr': 1e-3,
     'min_delta': 1e-4,
-    'patience': 100,
+    'input_length': 1000,
+    'patience': 10,
     'random_state': 0,
     'regularizer': 0,
     'validation_split': 0.2,
@@ -27,23 +28,28 @@ from keras.preprocessing.sequence import pad_sequences
 from keras.utils import np_utils
 
 import util
-from util import encode, preprocess
+try:
+    from util import encode, preprocess
+except:
+    pass
 
 def cnn_train(data):
     X = util.field_array(data, 'X')
-    X = pad_sequences(X, maxlen=2000, value=0)
+    X = pad_sequences(X, maxlen=opts['input_length'], value=0)
     #X = X.reshape(X.shape[0], X.shape[1], 1)
     y = [y-1 for y in util.field_array(data, 'y')]
     y = np_utils.to_categorical(y, 9)
 
     model = Sequential()
-    model.add(Embedding(np.amax(X)+1, opts['embedding_size'], input_length=2000))
+    model.add(Embedding(np.amax(X)+1, opts['embedding_size'], input_length=opts['input_length']))
     #model.add(Conv1D(64, 2, activation='relu', input_shape=(X.shape[1], 1)))
-    model.add(Conv1D(16, 4, activation='relu'))
-    model.add(BatchNormalization())
-    model.add(Dropout(0.8))
-    model.add(Conv1D(16, 4, activation='relu'))
-    model.add(MaxPooling1D(4))
+    #model.add(Conv1D(64, 8, activation='relu', padding='same'))
+    #model.add(Conv1D(32, 4, activation='relu', padding='same'))
+    model.add(Conv1D(32, 4, activation='relu', padding='same'))
+    model.add(Conv1D(16, 4, activation='relu', padding='same'))
+    model.add(MaxPooling1D(opts['input_length']))
+    #model.add(BatchNormalization())
+    model.add(Dropout(0.5))
     #model.add(BatchNormalization())
     #model.add(Dropout(0.5))
     #model.add(Conv1D(16, 2, activation='relu'))
@@ -52,8 +58,8 @@ def cnn_train(data):
     #model.add(Conv1D(16, 2, activation='relu'))
     #model.add(GlobalAveragePooling1D())
     model.add(Flatten())
-    model.add(BatchNormalization())
-    model.add(Dropout(0.8))
+    #model.add(BatchNormalization())
+    #model.add(Dropout(0.8))
     model.add(Dense(9, activation='softmax'))
 
     optimizer = Adam(lr=opts['lr'])
@@ -75,17 +81,18 @@ def cnn_train(data):
     model.save('final_model_saving_path')
 
 def rnn_train(data):
-    X = util.field_array(data, 'X')
-    X = pad_sequences(X, maxlen=2000, value=0)
+    X = [[t.tocoo().data for t in d['X']] for d in data]
+    X = pad_sequences(X, maxlen=opts['input_length'], value=0)
     #X = X.reshape(X.shape[0], X.shape[1], 1)
     y = [y-1 for y in util.field_array(data, 'y')]
     y = np_utils.to_categorical(y, 9)
 
     model = Sequential()
-    model.add(Embedding(np.amax(X)+1, opts['embedding_size'], input_length=2000))
-    #for _ in range(3):
-    #    model.add(LSTM(opts['output_dim'], return_sequences=True))
-    model.add(LSTM(opts['output_dim']))
+    #model.add(Embedding(np.amax(X)+1, opts['embedding_size'], input_length=2000))
+    model.add(LSTM(16, input_shape=(100, 10), return_sequences=True))
+    for _ in range(1):
+        model.add(LSTM(16, return_sequences=True))
+    model.add(LSTM(16))
     model.add(Dense(9, activation='softmax'))
 
     optimizer = Adam(lr=opts['lr'])
@@ -133,12 +140,12 @@ if '__main__' == __name__:
     #encode.tfidf_sequential(tr, tsm) # *(.c).ts.pkl, 0:08:12.010365
     #util.save(tr, 'tmp/tr.ts.pkl', 'tfidf', 'Class')
 
-    #encode.dummy_sequential(tr, tsm) # *.ds.pkl, 0:03:46.821351
-    #util.save(tr, 'tmp/te.ds.pkl', 'dummy', 'Class')
+    #encode.dummy_sequential(tr, tsm, 0.05) # *.ds.pkl, 0:03:46.821351
+    #util.save(tr, 'tmp/tr.ds005.pkl', 'dummy', 'Class')
 
-    #tr = load('tmp/tr.ts.pkl')
-    #encode.sparse_clean(tr, 'tfidf', 0.05) # *(.c).ts.sc*.pkl, 0:07:57.079560
-    #save(tr, 'tmp/tr.ts.sc005.pkl', 'tfidf', 'Class')
+    #tr = util.load('tmp/tmp2.pkl')
+    #encode.sparse_clean(tr, 0.5) # *(.c).ts.sc*.pkl, 0:07:57.079560
+    #util.save(tr, 'tmp/tmp.pkl')
 
     #tr = util.load('tmp/te.pbvw0.pkl')
     #tte = util.load('src/trueTstTotal.pkl')
@@ -147,9 +154,13 @@ if '__main__' == __name__:
     #encode.dummy_sequential(tr, tsm)
     #util.save(tr, 'tmp/tte.ds.pkl', 'dummy', 'Class')
 
-    tr = pickle.load(open('tr.ds.pkl', 'rb'))
+    tr = util.load('tmp/tr.ds005.pkl')
+    util.histogram(tr)
+
+    #tr = pickle.load(open('tr.c.ts.sc05.pkl', 'rb'))
+    #tr = pickle.load(open('tr.ds.pkl', 'rb'))
     #cnn_train(tr)
-    rnn_train(tr)
+    #rnn_train(tr)
 
 #   preprocess.normalize_gene(tr) # not yet
 #   preprocess.replace_text(tr, in_field='Gene', to_str=' __TARGET_GENE__ ')

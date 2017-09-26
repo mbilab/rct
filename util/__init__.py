@@ -1,9 +1,20 @@
 from datetime import datetime
 from os.path import isfile
+import numpy
 import pickle
 
 def field_array(data, field):
     return [d[field] for d in data]
+
+def histogram(data):
+    size = [len(d['X']) for d in data]
+    hist = numpy.histogram(size, max(size), (0, max(size)))
+    total = len(size)
+    counted = 0
+    for c, b in zip(hist[0], hist[1]): # count, bin
+        if c:
+            counted += c
+            print("%s\t%s\t%s" % (int(b), c, counted / total))
 
 def load(filename):
     return pickle.load(open(filename, 'rb'))
