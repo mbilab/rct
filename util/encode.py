@@ -19,7 +19,7 @@ def dummy_sequential(data, term_value, tolerance=0):
             terms.append(term_value['terms'][i])
     for d in data:
         d['dummy'] = []
-        for term in term_value['tokenizer'](d['text'].lower()):
+        for term in term_value['tokenizer'](d['Text'].lower()):
             try:
                 i = terms.index(term)
                 d['dummy'].append(i)
@@ -56,7 +56,7 @@ def svd(data, svder=None, input_field='tfidf', pickle_file=None, **kwargs):
     return svder
 
 def tfidf(data, tfidfer=None, **kwargs):
-    X = field_array(data, 'text')
+    X = field_array(data, 'Text')
     if not tfidfer:
         tfidfer = TfidfVectorizer(**kwargs)
         tfidfer.fit(X)
@@ -68,7 +68,7 @@ def tfidf(data, tfidfer=None, **kwargs):
 def tfidf_sequential(data, term_value):
     for d in data:
         d['tfidf'] = []
-        for term in term_value['tokenizer'](d['text'].lower()):
+        for term in term_value['tokenizer'](d['Text'].lower()):
             try:
                 i = term_value['terms'].index(term)
                 d['tfidf'].append(term_value['values'][:,i])
@@ -76,22 +76,26 @@ def tfidf_sequential(data, term_value):
                 pass
 
 def tfidf_sequential_model(data, only_overall=True, **kwargs):
-    X = field_array(data, 'text')
+    X = field_array(data, 'Text')
     X.append(' '.join(X))
     tfidfer = TfidfVectorizer(**kwargs)
     tfidfer.fit(X)
     values = tfidfer.transform(X)
     if only_overall:
         values = values[-1]
+    terms = tfidfer.get_feature_names()
+    #n = len(terms)
+    #s = sorted(range(n), key=lambda k: values[0,k], reverse=True)
+    #for i in range(n):
+    #    print('%s\t%s\t%s' % (terms[s[i]], values[0,s[i]], (i+1) / n))
     return {
-            'max': values.max(),
-            'terms': tfidfer.get_feature_names(),
+            'terms': terms,
             'tokenizer': tfidfer.build_tokenizer(),
             'values': values,
             }
 
 def tfidf_SVD(data, l):
-    sentences = [el['text'] for el in data]
+    sentences = [el['Text'] for el in data]
     vect = TfidfVectorizer()
     sentence_vectors = vect.fit_transform(sentences)
     svd = TruncatedSVD(l)
@@ -105,7 +109,7 @@ def doc2vec(data, l, model):
     label_sentences = []
     index = 0
     for row in data:
-        label_sentences.append(LabeledSentence(text_to_word_sequence(row['text']), ['Text' + '_%s' % str(index)]))
+        label_sentences.append(LabeledSentence(text_to_word_sequence(row['Text']), ['Text' + '_%s' % str(index)]))
         index = index + 1
 
     if os.path.isfile(model):

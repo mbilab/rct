@@ -117,33 +117,33 @@ def rnn_train(data):
 
 if '__main__' == __name__:
 
-    #tr = preprocess.load('src/tr.csv') # tr.pkl, 0:00:01.650411
-    #util.save(tr, 'tmp/tr.pkl')
+    #tr = preprocess.load('src/training_variants', 'src/training_text') # {tr,te,tte}.pkl, 0:00:01.341790
+    #save(tr, 'tmp/tr.pkl')
 
-    #tr = util.load('tmp/tr.pkl')
-    #preprocess.remove_stop_words(tr) # tr.rsw.pkl, 0:00:46.640691
-    #util.save(tr, 'tmp/tr.rsw.pkl')
+    #tr = load('tmp/tr.pkl')
+    #preprocess.remove_stop_words(tr) # *.rsw.pkl, 0:00:44.942251
+    #save(tr, 'tmp/tr.rsw.pkl')
 
     #tr = util.load('tmp/tr.rsw.pkl')
-    #preprocess.normalize_target_variation(tr) # 0:00:11.750795
-    #preprocess.replace_text(tr, in_field='Variation', to_str=' __TARGET_VARIATION__ ') # 0:00:00.348791
-    #preprocess.sentences(tr) # *.s.pkl, 0:01:16.074815
+    #preprocess.normalize_target_variation(tr) # 0:00:11.831447
+    #preprocess.replace_text(tr, in_field='Variation', to_str=' __TARGET_VARIATION__ ') # 0:00:00.419632
+    #preprocess.sentences(tr) # *.s.pkl, 0:01:15.682816
     #util.save(tr, 'tmp/tr.s.pkl')
 
     #tr = util.load('tmp/tr.s.pkl')
-    #preprocess.paragraph_by_variation(tr, 0) # *.pbvw*.pkl, 0:00:00.772103
+    #preprocess.paragraph_by_variation(tr, 0) # *.pbvw*.pkl, 0:00:00.929176
     #util.save(tr, 'tmp/tr.pbvw0.pkl')
 
     #tr = util.load('tmp/tr.pbvw0.pkl')
-    #c = preprocess.concatenate(tr) # 0:00:01.121521
-    #tsm = encode.tfidf_sequential_model(c) # 0:00:03.516558
-    #tsm = encode.tfidf_sequential_model(c, False)
+    #c = preprocess.concatenate(tr) # 0:00:00.530155
+    #tsm = encode.tfidf_sequential_model(tr) # 0:00:04.937104
+    #tsm = encode.tfidf_sequential_model(c, False) # 0:00:02.323202
 
     #encode.tfidf_sequential(tr, tsm) # *(.c).ts.pkl, 0:08:12.010365
     #util.save(tr, 'tmp/tr.ts.pkl', 'tfidf', 'Class')
 
-    #encode.dummy_sequential(tr, tsm, 0.0001) # *.ds.pkl, 0:04:59.167635
-    #util.save(tr, 'tmp/tr.dsc-4.pkl', 'dummy', 'Class')
+    #encode.dummy_sequential(tr, tsm, 0.05) # *.ds.pkl, 0:03:46.821351
+    #util.save(tr, 'tmp/tr.ds005.pkl', 'dummy', 'Class')
 
     #tr = util.load('tmp/tmp2.pkl')
     #encode.sparse_clean(tr, 0.5) # *(.c).ts.sc*.pkl, 0:07:57.079560
@@ -156,7 +156,7 @@ if '__main__' == __name__:
     #encode.dummy_sequential(tr, tsm)
     #util.save(tr, 'tmp/tte.ds.pkl', 'dummy', 'Class')
 
-    #tr = util.load('tmp/tr.dsc-4.pkl')
+    #tr = util.load('tmp/tr.ds005.pkl')
     #util.histogram(tr)
 
     #tr = pickle.load(open('tr.c.ts.sc05.pkl', 'rb'))
