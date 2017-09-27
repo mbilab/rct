@@ -21,7 +21,7 @@ def load(filename):
     return pickle.load(open(filename, 'rb'))
 
 # sentence to dummy sequence
-def s2ds(filename, paragraph_size=0, concatenate_by_class=True, tfidf_tolerance=0): # 0:07:59.554650
+def s2ds(filename, paragraph_size=0, concatenate_by_class=True, tfidf_tolerance=0, test_filename=None): # 0:07:59.554650
     t = tick()
     data = load(filename)
     preprocess.paragraph_by_variation(data, paragraph_size) # *.pbvw*.pkl, 0:00:00.772103
@@ -31,6 +31,12 @@ def s2ds(filename, paragraph_size=0, concatenate_by_class=True, tfidf_tolerance=
     encode.dummy_sequence(data, tsm, tfidf_tolerance) # *.ds.pkl, 0:04:59.167635
     c = 'c' if concatenate_by_class else ''
     save(data, filename.replace('.pkl', '.ds%s%s.pkl' % (c, tfidf_tolerance)), 'dummy', 'Class')
+    if test_filename:
+        filename = test_filename
+        data = load(filename)
+        encode.dummy_sequence(data, tsm, tfidf_tolerance)
+        c = 'c' if concatenate_by_class else ''
+        save(data, filename.replace('.pkl', '.ds%s%s.pkl' % (c, tfidf_tolerance)), 'dummy', 'Class')
     t = tick(t, 's2ds')
 
 def save(data, filename, X_field=None, y_field=None, force=False):
@@ -54,7 +60,8 @@ def swv(filename): # 0:01:10.617185
     preprocess.paragraph_by_variation(data, use_first_sentence=False, paragraph_end=' ') # *.pbvw*.pkl, 0:00:00.772103
     for d in data:
         d['Text'] = re.sub(r'__TARGET_VARIATION__', d['Variation'], d['Text']).rstrip()
-    to_csv(data, ['Class', 'Gene', 'Variation', 'Text'])
+    #to_csv(data, ['Class', 'Gene', 'Variation', 'Text'])
+    to_csv(data, ['Gene', 'Variation', 'Text'])
     t = tick(t, 'swv')
 
 def tick(last=None, name=None):

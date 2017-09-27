@@ -147,7 +147,7 @@ if '__main__' == __name__:
 
     #util.swv('tmp/te.rsw.pkl') # 0:01:10.617185
 
-    #tr = util.s2ds('tmp/tr.s.pkl', 0, False, 0) # 0:07:59.554650
+    #tr = util.s2ds('tmp1/tr.s.pkl', 0, True, 1e-4, 'tmp1/tte.s.pkl') # 0:07:59.554650
 
     #encode.tfidf_sequential(tr, tsm) # *(.c).ts.pkl, 0:08:12.010365
     #util.save(tr, 'tmp/tr.ts.pkl', 'tfidf', 'Class')
@@ -156,12 +156,12 @@ if '__main__' == __name__:
     #encode.sparse_clean(tr, 0.5) # *(.c).ts.sc*.pkl, 0:07:57.079560
     #util.save(tr, 'tmp/tmp.pkl')
 
-    #tr = util.load('tmp/te.pbvw0.pkl')
-    #tte = util.load('src/trueTstTotal.pkl')
+    #tr = util.load('ignore/stage_1_tmp/te.pkl')
+    #tte = util.load('src/stage_1/trueTstTotal.pkl')
     #tr = preprocess.subset(tr, tte) # tte(.c).ts.pkl, 0:00:00.180169
     #encode.tfidf_sequential(tr, tsm)
     #encode.dummy_sequential(tr, tsm)
-    #util.save(tr, 'tmp/tte.ds.pkl', 'dummy', 'Class')
+    #util.save(tr, 'tmp1/tte.pkl')
 
     #tr = util.load('tmp/tr.dsc-4.pkl')
     #util.histogram(tr)
@@ -170,7 +170,7 @@ if '__main__' == __name__:
     #cnn_train(tr)
     #rnn_train(tr)
 
-    #predict('tmp/tr.dsc-4.h5', 'tmp/tr.dsc-4.pkl', 'tmp/tr.pkl')
+    #predict('tmp1/tr.dsc-4.h5', 'tmp1/tte.dsc-4.pkl', 'tmp1/tte.pkl')
 
 #   preprocess.normalize_gene(tr) # not yet
 #   preprocess.replace_text(tr, in_field='Gene', to_str=' __TARGET_GENE__ ')
