@@ -84,10 +84,10 @@ def tfidf_sequential_model(data, only_overall=True, **kwargs):
     if only_overall:
         values = values[-1]
     terms = tfidfer.get_feature_names()
-    #n = len(terms)
-    #s = sorted(range(n), key=lambda k: values[0,k], reverse=True)
-    #for i in range(n):
-    #    print('%s\t%s\t%s' % (terms[s[i]], values[0,s[i]], (i+1) / n))
+    n = len(terms)
+    s = sorted(range(n), key=lambda k: values[0,k], reverse=True)
+    for i in range(n):
+        print('%s\t%s\t%s' % (terms[s[i]], values[0,s[i]], (i+1) / n))
     return {
             'terms': terms,
             'tokenizer': tfidfer.build_tokenizer(),

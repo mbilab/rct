@@ -2,6 +2,7 @@ from datetime import datetime
 from os.path import isfile
 import numpy
 import pickle
+import re
 
 def field_array(data, field):
     return [d[field] for d in data]
@@ -20,7 +21,7 @@ def load(filename):
     return pickle.load(open(filename, 'rb'))
 
 # sentence to dummy sequence
-def s2ds(filename, paragraph_size=0, concatenate_by_class=True, tfidf_tolerance=0):
+def s2ds(filename, paragraph_size=0, concatenate_by_class=True, tfidf_tolerance=0): # 0:07:59.554650
     t = tick()
     data = load(filename)
     preprocess.paragraph_by_variation(data, paragraph_size) # *.pbvw*.pkl, 0:00:00.772103
@@ -43,6 +44,19 @@ def save(data, filename, X_field=None, y_field=None, force=False):
     pickle.dump(data, open(filename, 'wb'))
     print('%s saved' % (filename))
 
+# sentence with variation
+def swv(filename): # 0:01:10.617185
+    t = tick()
+    data = load(filename)
+    preprocess.normalize_target_variation(data) # 0:00:11.750795
+    preprocess.replace_text(data, in_field='Variation', to_str=' __TARGET_VARIATION__ ') # 0:00:00.348791
+    preprocess.sentences(data, None) # *.s.pkl, 0:01:16.074815
+    preprocess.paragraph_by_variation(data, use_first_sentence=False, paragraph_end=' ') # *.pbvw*.pkl, 0:00:00.772103
+    for d in data:
+        d['Text'] = re.sub(r'__TARGET_VARIATION__', d['Variation'], d['Text']).rstrip()
+    to_csv(data, ['Class', 'Gene', 'Variation', 'Text'])
+    t = tick(t, 'swv')
+
 def tick(last=None, name=None):
     n = datetime.now()
     if last:
@@ -55,6 +69,6 @@ def tick(last=None, name=None):
 def to_csv(data, fields):
     print(','.join(fields))
     for d in data:
-        print(','.join([d[f] for f in fields]))
+        print(','.join([str(d[f]) for f in fields]))
 
 # vi:et:sw=4:ts=4

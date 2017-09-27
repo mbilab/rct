@@ -37,7 +37,13 @@ def normalize_target_variation(data):
                 aliases = ["%s%s%s" % (s, v.pos, e) for s in starts for e in [v.end_amino] + aa_alias[v.end_amino.upper()]]
             d['Text'] = re.sub('%s' % '|'.join(aliases), v.var, d['Text'], flags=re.IGNORECASE)
 
-def paragraph_by_variation(data, window_size=0, unit='sentence', target_variation='__TARGET_VARIATION__', paragraph_end=' __PARAGRAPH_END__ '):
+def paragraph_by_variation(
+        data,
+        window_size=0,
+        unit='sentence',
+        use_first_sentence=True,
+        target_variation='__TARGET_VARIATION__',
+        paragraph_end=' __PARAGRAPH_END__ '):
     for d in data:
         d['Text'] = ''
         s = d['sentences']
@@ -47,9 +53,10 @@ def paragraph_by_variation(data, window_size=0, unit='sentence', target_variatio
                     d['Text'] += s[j]
                 d['Text'] += paragraph_end
         if '' == d['Text']:
-            #d['Text'] = 'No target variation found.'
-            d['Text'] = d['sentences'][0] + paragraph_end # use the first sentence instead
-        #d['Text'] = re.sub(r'__TARGET_VARIATION__', d['Variation'], d['Text']).rstrip()
+            if use_first_sentence:
+                d['Text'] = d['sentences'][0] + paragraph_end # use the first sentence instead
+            else:
+                d['Text'] = 'No target variation found.'
 
 def remove_stop_words(data):
     stopwords_list = stopwords.words('english')
@@ -64,9 +71,9 @@ def replace_text(data, in_field=None, to_str=None):
 def sentences(data, sentence_end=' __SENTENCE_END__ '):
     for d in data:
         d['sentences'] = []
-        text = re.sub(r'\s\.([A-Z]\w+)', r'\s \1', d['Text'])
+        text = re.sub(r'\s+([\.\!\?])([A-Z]\w+)', r'\1 \2', d['Text'])
         if sentence_end:
-            d['sentences'] = [re.sub(r'\.?$', sentence_end, s).rstrip() for s in sent_tokenize(text)]
+            d['sentences'] = [re.sub(r'[\.\!\?]?$', sentence_end, s).rstrip() for s in sent_tokenize(text)]
         else:
             d['sentences'] = [s.rstrip() for s in sent_tokenize(text)]
 

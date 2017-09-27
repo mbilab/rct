@@ -20,14 +20,12 @@ from inspect import signature
 import pickle
 import sys
 
-'''
 from keras.callbacks import EarlyStopping, ModelCheckpoint
 from keras.layers import BatchNormalization, Conv1D, Dense, Dropout, Embedding, Flatten, GlobalAveragePooling1D, LSTM, MaxPooling1D
-from keras.models import Sequential, load_model
+from keras.models import load_model, Model, Sequential
 from keras.optimizers import Adam
 from keras.preprocessing.sequence import pad_sequences
 from keras.utils import np_utils
-'''
 
 import util
 try:
@@ -45,19 +43,11 @@ def cnn_train(data):
     model = Sequential()
     model.add(Embedding(np.amax(X)+1, opts['embedding_size'], input_length=opts['input_length']))
     #model.add(Conv1D(64, 2, activation='relu', input_shape=(X.shape[1], 1)))
-    #model.add(Conv1D(64, 8, activation='relu', padding='same'))
-    #model.add(Conv1D(32, 4, activation='relu', padding='same'))
-    model.add(Conv1D(32, 4, activation='relu', padding='same'))
-    model.add(Conv1D(16, 4, activation='relu', padding='same'))
+    model.add(Conv1D(32, 8, activation='relu', padding='same'))
+    model.add(Conv1D(64, 2, activation='relu', padding='same'))
     model.add(MaxPooling1D(opts['input_length']))
     #model.add(BatchNormalization())
     model.add(Dropout(0.5))
-    #model.add(BatchNormalization())
-    #model.add(Dropout(0.5))
-    #model.add(Conv1D(16, 2, activation='relu'))
-    #model.add(BatchNormalization())
-    #model.add(Dropout(0.5))
-    #model.add(Conv1D(16, 2, activation='relu'))
     #model.add(GlobalAveragePooling1D())
     model.add(Flatten())
     #model.add(BatchNormalization())
@@ -66,6 +56,8 @@ def cnn_train(data):
 
     optimizer = Adam(lr=opts['lr'])
     model.compile(loss='categorical_crossentropy', metrics=['categorical_crossentropy', 'accuracy'], optimizer=optimizer)
+    #model.summary()
+    #return
 
     ckpt = ModelCheckpoint('best_model_saving_path', monitor='val_loss', verbose=1, save_best_only=True, mode='auto')
     es = EarlyStopping(min_delta=opts['min_delta'], patience=opts['patience'])
@@ -82,18 +74,41 @@ def cnn_train(data):
     model.fit(X, y, callbacks=[ckpt, es], verbose=verbose, **fit_opts)
     model.save('final_model_saving_path')
 
+def predict(model_filename, data_filename, data_info_filename):
+    model = load_model(model_filename)
+    data = util.load(data_filename)
+    data_info = util.load(data_info_filename)
+    X = util.field_array(data, 'X')
+    X = pad_sequences(X, maxlen=model.get_layer(index=0).input_shape[1], value=0)
+
+    layer_model = Model(inputs=model.input, outputs=model.get_layer(index=-2).output)
+    h = layer_model.predict(X)
+    o = model.predict(X)
+
+    print(','.join(
+        ['Gene', 'Variation'] +
+        ['H'+str(i+1) for i in range(h.shape[1])] +
+        ['O'+str(i+1) for i in range(o.shape[1])]))
+    for i in range(len(data)):
+        d = data_info[i]
+        print(','.join([str(v) for v in [
+            d['Gene'], d['Variation']] +
+            list(h[i]) +
+            list(o[i])]))
+
 def rnn_train(data):
-    X = [[t.tocoo().data for t in d['X']] for d in data]
+    #X = [[t.tocoo().data for t in d['X']] for d in data]
+    X = util.field_array(data, 'X')
     X = pad_sequences(X, maxlen=opts['input_length'], value=0)
     #X = X.reshape(X.shape[0], X.shape[1], 1)
     y = [y-1 for y in util.field_array(data, 'y')]
     y = np_utils.to_categorical(y, 9)
 
     model = Sequential()
-    #model.add(Embedding(np.amax(X)+1, opts['embedding_size'], input_length=2000))
-    model.add(LSTM(16, input_shape=(100, 10), return_sequences=True))
-    for _ in range(1):
-        model.add(LSTM(16, return_sequences=True))
+    model.add(Embedding(np.amax(X)+1, opts['embedding_size'], input_length=opts['input_length']))
+    #model.add(LSTM(16, input_shape=(100, 10), return_sequences=True))
+    #for _ in range(1):
+    #    model.add(LSTM(16, return_sequences=True))
     model.add(LSTM(16))
     model.add(Dense(9, activation='softmax'))
 
@@ -117,12 +132,12 @@ def rnn_train(data):
 
 if '__main__' == __name__:
 
-    #tr = preprocess.load('src/tr.csv') # tr.pkl, 0:00:01.650411
-    #util.save(tr, 'tmp/tr.pkl')
+    #tr = preprocess.load('src/te.csv') # tr.pkl, 0:00:01.650411
+    #util.save(tr, 'tmp/te.pkl')
 
-    #tr = util.load('tmp/tr.pkl')
+    #tr = util.load('tmp/te.pkl')
     #preprocess.remove_stop_words(tr) # tr.rsw.pkl, 0:00:46.640691
-    #util.save(tr, 'tmp/tr.rsw.pkl')
+    #util.save(tr, 'tmp/te.rsw.pkl')
 
     #tr = util.load('tmp/tr.rsw.pkl')
     #preprocess.normalize_target_variation(tr) # 0:00:11.750795
@@ -130,7 +145,9 @@ if '__main__' == __name__:
     #preprocess.sentences(tr) # *.s.pkl, 0:01:16.074815
     #util.save(tr, 'tmp/tr.s.pkl')
 
-    tr = util.s2ds('tmp/tr.s.pkl', 0, False, 1e-4) # 0:07:59.554650
+    #util.swv('tmp/te.rsw.pkl') # 0:01:10.617185
+
+    #tr = util.s2ds('tmp/tr.s.pkl', 0, False, 0) # 0:07:59.554650
 
     #encode.tfidf_sequential(tr, tsm) # *(.c).ts.pkl, 0:08:12.010365
     #util.save(tr, 'tmp/tr.ts.pkl', 'tfidf', 'Class')
@@ -149,10 +166,11 @@ if '__main__' == __name__:
     #tr = util.load('tmp/tr.dsc-4.pkl')
     #util.histogram(tr)
 
-    #tr = pickle.load(open('tr.c.ts.sc05.pkl', 'rb'))
     #tr = pickle.load(open('tr.ds.pkl', 'rb'))
     #cnn_train(tr)
     #rnn_train(tr)
+
+    #predict('tmp/tr.dsc-4.h5', 'tmp/tr.dsc-4.pkl', 'tmp/tr.pkl')
 
 #   preprocess.normalize_gene(tr) # not yet
 #   preprocess.replace_text(tr, in_field='Gene', to_str=' __TARGET_GENE__ ')
