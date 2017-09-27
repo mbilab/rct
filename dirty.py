@@ -130,20 +130,10 @@ if '__main__' == __name__:
     #preprocess.sentences(tr) # *.s.pkl, 0:01:16.074815
     #util.save(tr, 'tmp/tr.s.pkl')
 
-    #tr = util.load('tmp/tr.s.pkl')
-    #preprocess.paragraph_by_variation(tr, 0) # *.pbvw*.pkl, 0:00:00.772103
-    #util.save(tr, 'tmp/tr.pbvw0.pkl')
-
-    #tr = util.load('tmp/tr.pbvw0.pkl')
-    #c = preprocess.concatenate(tr) # 0:00:01.121521
-    #tsm = encode.tfidf_sequential_model(c) # 0:00:03.516558
-    #tsm = encode.tfidf_sequential_model(c, False)
+    tr = util.s2ds('tmp/tr.s.pkl', 0, False, 1e-4) # 0:07:59.554650
 
     #encode.tfidf_sequential(tr, tsm) # *(.c).ts.pkl, 0:08:12.010365
     #util.save(tr, 'tmp/tr.ts.pkl', 'tfidf', 'Class')
-
-    #encode.dummy_sequential(tr, tsm, 0.0001) # *.ds.pkl, 0:04:59.167635
-    #util.save(tr, 'tmp/tr.dsc-4.pkl', 'dummy', 'Class')
 
     #tr = util.load('tmp/tmp2.pkl')
     #encode.sparse_clean(tr, 0.5) # *(.c).ts.sc*.pkl, 0:07:57.079560

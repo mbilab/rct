@@ -19,6 +19,19 @@ def histogram(data):
 def load(filename):
     return pickle.load(open(filename, 'rb'))
 
+# sentence to dummy sequence
+def s2ds(filename, paragraph_size=0, concatenate_by_class=True, tfidf_tolerance=0):
+    t = tick()
+    data = load(filename)
+    preprocess.paragraph_by_variation(data, paragraph_size) # *.pbvw*.pkl, 0:00:00.772103
+    #util.save(tr, filename.replace('.pkl', ".pbvw%s.pkl" % (paragraph_size)))
+    c = preprocess.concatenate(data) if concatenate_by_class else data # 0:00:01.121521
+    tsm = encode.tfidf_sequential_model(c) # 0:00:03.516558
+    encode.dummy_sequence(data, tsm, tfidf_tolerance) # *.ds.pkl, 0:04:59.167635
+    c = 'c' if concatenate_by_class else ''
+    save(data, filename.replace('.pkl', '.ds%s%s.pkl' % (c, tfidf_tolerance)), 'dummy', 'Class')
+    t = tick(t, 's2ds')
+
 def save(data, filename, X_field=None, y_field=None, force=False):
     if isfile(filename) and not force:
         raise FileExistsError('%s existed, please delete it manually before saving' % (filename))
@@ -30,10 +43,13 @@ def save(data, filename, X_field=None, y_field=None, force=False):
     pickle.dump(data, open(filename, 'wb'))
     print('%s saved' % (filename))
 
-def tick(last=None):
+def tick(last=None, name=None):
     n = datetime.now()
     if last:
-        print(n - last)
+        if name:
+            print('%s: %s' % (name, n - last))
+        else:
+            print(n - last)
     return n
 
 def to_csv(data, fields):
