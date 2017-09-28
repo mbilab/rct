@@ -1,7 +1,15 @@
 #!/usr/bin/env python3
 
+import numpy
+import pandas
+from sklearn.metrics import log_loss
+import sys
+
 import util
-from util import encode, nn, preprocess
+from util import encode, preprocess
+#from util import nn
+
+from xgboost import cv, DMatrix, XGBClassifier
 
 if '__main__' == __name__:
 
@@ -39,12 +47,60 @@ if '__main__' == __name__:
     #tr = util.load('tmp/tr.dsc-4.pkl')
     #util.histogram(tr)
 
-    tr = util.load('tmp/tr.dsc-4.pkl')
+    #tr = util.load('tmp/tr.dsc-4.pkl')
     #nn.cnn_train(tr)
-    nn.cnn2_train(tr)
+    #nn.cnn2_train(tr)
     #rnn_train(tr)
 
+    #tr = util.load('ignore/stage_1_tmp/tr.pkl')
+    #tte = util.load('ignore/stage_1_tmp/tte.pkl')
+    #tt = tr + tte
+    #encode.tfidf(tt)
+    #tt = util.load('tmp1/all.t.pkl')
+    #encode.svd(tt, n_components=64)
+    #util.save(tt, 'tmp1/all.s64.pkl')
+
     #predict('tmp1/tr.dsc-4.h5', 'tmp1/tte.dsc-4.pkl', 'tmp1/tte.pkl')
+
+    tt = util.load('tmp1/all.s64.pkl')
+    tt = tt[:3321]
+    tr = pandas.read_csv('ignore/stage_1_tmp/tr.dsc-4.csv').values
+    tr = numpy.delete(tr, [0, 1] + list(range(66, 75)), 1)
+    #tr = numpy.delete(tr, [0, 1], 1)
+    for d, nn in zip(tt, tr):
+        #d['X'] = numpy.hstack([d['svd'], nn])
+        #d['X'] = numpy.hstack([d['svd']])
+        d['X'] = numpy.hstack([nn])
+        d['y'] = int(d.pop('Class')) - 1
+    X = numpy.vstack(util.field_array(tt, 'X'))
+    y = util.field_array(tt, 'y')
+    #out = cv({
+    #    'learning_rate': 0.1,
+    #    'max_depth': 4,
+    #    'n_estimators': 100,
+    #    'objective': 'multi:softprob',
+    #    'num_class': 9
+    #    }, DMatrix(X, y), seed=0)
+    #print(out)
+    #sys.exit(0)
+
+    model = XGBClassifier(learning_rate=0.1, max_depth=4, n_estimators=100, objective='multi:softprob', seed=0)
+    model.fit(X, y)
+
+    tt = util.load('tmp1/all.s64.pkl')
+    tt = tt[3321:]
+    tr = pandas.read_csv('ignore/stage_1_tmp/tte.dsc-4.csv').values
+    tr = numpy.delete(tr, [0, 1] + list(range(66, 75)), 1)
+    #tr = numpy.delete(tr, [0, 1], 1)
+    for d, nn in zip(tt, tr):
+        #d['X'] = numpy.hstack([d['svd'], nn])
+        #d['X'] = numpy.hstack([d['svd']])
+        d['X'] = numpy.hstack([nn])
+        d['y'] = int(d.pop('Class')) - 1
+    X = numpy.vstack(util.field_array(tt, 'X'))
+    y = util.field_array(tt, 'y')
+    proba = model.predict_proba(X)
+    print(log_loss(y, proba))
 
 #   preprocess.normalize_gene(tr) # not yet
 #   preprocess.replace_text(tr, in_field='Gene', to_str=' __TARGET_GENE__ ')

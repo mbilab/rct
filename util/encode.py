@@ -1,7 +1,9 @@
+import numpy
 import os
 import pickle
-
+from scipy.sparse import vstack
 from scipy.sparse.csr import csr_matrix
+
 from sklearn.decomposition import TruncatedSVD
 from sklearn.feature_extraction.text import TfidfVectorizer
 
@@ -41,12 +43,8 @@ def sparse_clean(data, tolerance=0.01, field='X'):
             n += len(d[field])
     print('sparse clean (<%s) from %s to %s terms' % (tolerance, o, n))
 
-def svd(data, svder=None, input_field='tfidf', pickle_file=None, **kwargs):
-    if pickle_file:
-        path = preprocess.find_pickle(pickle_file)
-        if path:
-            return pickle.load(open(path, 'rb'))
-    X = [d[input_field] for d in data]
+def svd(data, svder=None, input_field='tfidf', **kwargs):
+    X = vstack(field_array(data, 'tfidf'))
     if not svder:
         svder = TruncatedSVD(**kwargs)
         svder.fit(X)
@@ -94,16 +92,9 @@ def tfidf_sequential_model(data, only_overall=True, **kwargs):
             'values': values,
             }
 
-def tfidf_SVD(data, l):
-    sentences = [el['Text'] for el in data]
-    vect = TfidfVectorizer()
-    sentence_vectors = vect.fit_transform(sentences)
-    svd = TruncatedSVD(l)
-    sentence_vectors = svd.fit_transform(sentence_vectors)
-    index = 0
-    for _ in data:
-        data[index]['tfidf_SVD'] = sentence_vectors[index]
-        index = index + 1
+def tfidf_SVD(data, n_components):
+    tfidf(data)
+    svd(data, n_components=n_components)
 
 def doc2vec(data, l, model):
     label_sentences = []
