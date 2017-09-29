@@ -2,4 +2,5 @@ ignore/
 __pycache__/
 src/
 tmp/
+tmp1/
 .venv
