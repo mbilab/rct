@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
 opts = {
-    'batch_size': 0.8,
+    'batch_size': 0.05,
     'embedding_size': 256,
-    'epochs': 1000,
+    'epochs': 20,
     'lr': 1e-3,
     'min_delta': 1e-4,
     'input_length': 1000,
@@ -35,13 +35,10 @@ def cnn_train(data):
 
     model = Sequential()
     model.add(Embedding(np.amax(X)+1, opts['embedding_size'], input_length=opts['input_length']))
-    #model.add(Conv1D(64, 2, activation='relu', input_shape=(X.shape[1], 1)))
     model.add(Conv1D(32, 4, activation='relu', padding='same'))
     model.add(Conv1D(64, 2, activation='relu', padding='same'))
     model.add(MaxPooling1D(opts['input_length']))
-    #model.add(BatchNormalization())
     model.add(Dropout(0.5))
-    #model.add(GlobalAveragePooling1D())
     model.add(Flatten())
     #model.add(BatchNormalization())
     #model.add(Dropout(0.8))
@@ -51,9 +48,7 @@ def cnn_train(data):
     return X_val, y_val
 
 def cnn2_train(data):
-    X, y = format_data(data)
-    print(X)
-    print(y)
+    X, y, X_val, y_val = format_data(data)
 
     inputs = Input(shape=(opts['input_length'],))
     common = Embedding(np.amax(X)+1, opts['embedding_size'])(inputs)
@@ -85,7 +80,8 @@ def cnn2_train(data):
 
     model = Model(inputs=inputs, outputs=outputs)
 
-    compile_and_fit(model, X, y)
+    compile_and_fit(model, X, y, X_val, y_val)
+    return X_val, y_val
 
 def compile_and_fit(model, X, y, X_val, y_val):
     optimizer = Adam(lr=opts['lr'])
@@ -93,7 +89,7 @@ def compile_and_fit(model, X, y, X_val, y_val):
     model.summary()
     # return
 
-    ckpt = ModelCheckpoint('best_model_saving_path', monitor='val_loss', verbose=1, save_best_only=True, mode='auto')
+    ckpt = ModelCheckpoint('stage_1_parallel_cnn', monitor='val_loss', verbose=1, save_best_only=True, mode='auto')
     es = EarlyStopping(min_delta=opts['min_delta'], patience=opts['patience'])
 
     if opts['batch_size'] <= 1:
