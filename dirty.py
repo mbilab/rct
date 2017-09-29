@@ -4,12 +4,14 @@ import numpy
 import pandas
 from sklearn.metrics import log_loss
 import sys
+import pickle
+from keras.models import load_model
 
 import util
 from util import encode, preprocess
-#from util import nn
+from util import nn
 
-from xgboost import cv, DMatrix, XGBClassifier
+# from xgboost import cv, DMatrix, XGBClassifier
 
 if '__main__' == __name__:
 
@@ -47,10 +49,15 @@ if '__main__' == __name__:
     #tr = util.load('tmp/tr.dsc-4.pkl')
     #util.histogram(tr)
 
-    #tr = util.load('tmp/tr.dsc-4.pkl')
+    tr = util.load('tmp/tr.dsc-4.pkl')
     #nn.cnn_train(tr)
-    #nn.cnn2_train(tr)
-    #rnn_train(tr)
+    X_val, y_val = nn.cnn_train(tr)
+    #nn.rnn_train(tr)
+    model = load_model('best_model_saving_path')
+    prob = model.predict(X_val)
+    with open('shuffle.pkl', 'wb') as p:
+        pickle.dump(prob, p)
+    sys.exit(0)
 
     #tr = util.load('ignore/stage_1_tmp/tr.pkl')
     #tte = util.load('ignore/stage_1_tmp/tte.pkl')

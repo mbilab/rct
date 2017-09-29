@@ -48,6 +48,7 @@ def cnn_train(data):
     model.add(Dense(9, activation='softmax'))
 
     compile_and_fit(model, X, y, X_val, y_val)
+    return X_val, y_val
 
 def cnn2_train(data):
     X, y = format_data(data)
