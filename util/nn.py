@@ -2,11 +2,11 @@
 
 opts = {
     'batch_size': 0.8,
-    'embedding_size': 32,
-    'epochs': 100000,
+    'embedding_size': 256,
+    'epochs': 1000,
     'lr': 1e-3,
     'min_delta': 1e-4,
-    'input_length': 1000,
+    'input_length': 2000,
     'patience': 10,
     'random_state': 0,
     'regularizer': 0,
@@ -35,7 +35,7 @@ def cnn_train(data):
     model = Sequential()
     model.add(Embedding(np.amax(X)+1, opts['embedding_size'], input_length=opts['input_length']))
     #model.add(Conv1D(64, 2, activation='relu', input_shape=(X.shape[1], 1)))
-    model.add(Conv1D(32, 8, activation='relu', padding='same'))
+    model.add(Conv1D(32, 4, activation='relu', padding='same'))
     model.add(Conv1D(64, 2, activation='relu', padding='same'))
     model.add(MaxPooling1D(opts['input_length']))
     #model.add(BatchNormalization())
@@ -46,10 +46,12 @@ def cnn_train(data):
     #model.add(Dropout(0.8))
     model.add(Dense(9, activation='softmax'))
 
-    compile_and_fit(model)
+    compile_and_fit(model, X, y)
 
 def cnn2_train(data):
     X, y = format_data(data)
+    print(X)
+    print(y)
 
     inputs = Input(shape=(opts['input_length'],))
     common = Embedding(np.amax(X)+1, opts['embedding_size'])(inputs)
@@ -81,13 +83,13 @@ def cnn2_train(data):
 
     model = Model(inputs=inputs, outputs=outputs)
 
-    compile_and_fit(model)
+    compile_and_fit(model, X, y)
 
-def compile_and_fit(model):
+def compile_and_fit(model, X, y):
     optimizer = Adam(lr=opts['lr'])
     model.compile(loss='categorical_crossentropy', metrics=['categorical_crossentropy', 'accuracy'], optimizer=optimizer)
     model.summary()
-    return
+    # return
 
     ckpt = ModelCheckpoint('best_model_saving_path', monitor='val_loss', verbose=1, save_best_only=True, mode='auto')
     es = EarlyStopping(min_delta=opts['min_delta'], patience=opts['patience'])
