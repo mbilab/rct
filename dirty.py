@@ -57,6 +57,8 @@ if '__main__' == __name__:
     prob = model.predict(X_val)
     with open('shuffle.pkl', 'wb') as p:
         pickle.dump(prob, p)
+    with open('ytrue.pkl', 'wb') as p:
+        pickle.dump(y_val, p)
     sys.exit(0)
 
     #tr = util.load('ignore/stage_1_tmp/tr.pkl')
