@@ -6,7 +6,7 @@ opts = {
     'epochs': 1000,
     'lr': 1e-3,
     'min_delta': 1e-4,
-    'input_length': 2000,
+    'input_length': 1000,
     'patience': 10,
     'random_state': 0,
     'regularizer': 0,
@@ -28,9 +28,10 @@ from keras.preprocessing.sequence import pad_sequences
 from keras.utils import np_utils
 
 import util
+from random import shuffle
 
 def cnn_train(data):
-    X, y = format_data(data)
+    X, y, X_val, y_val = format_data(data)
 
     model = Sequential()
     model.add(Embedding(np.amax(X)+1, opts['embedding_size'], input_length=opts['input_length']))
@@ -46,7 +47,7 @@ def cnn_train(data):
     #model.add(Dropout(0.8))
     model.add(Dense(9, activation='softmax'))
 
-    compile_and_fit(model, X, y)
+    compile_and_fit(model, X, y, X_val, y_val)
 
 def cnn2_train(data):
     X, y = format_data(data)
@@ -85,7 +86,7 @@ def cnn2_train(data):
 
     compile_and_fit(model, X, y)
 
-def compile_and_fit(model, X, y):
+def compile_and_fit(model, X, y, X_val, y_val):
     optimizer = Adam(lr=opts['lr'])
     model.compile(loss='categorical_crossentropy', metrics=['categorical_crossentropy', 'accuracy'], optimizer=optimizer)
     model.summary()
@@ -98,6 +99,8 @@ def compile_and_fit(model, X, y):
         opts['batch_size'] = int(len(y) * opts['batch_size'])
     keys = set(opts) & set(signature(model.fit).parameters)
     fit_opts = { key: opts[key] for key in keys }
+    fit_opts['validation_split'] = 0
+    fit_opts['validation_data'] = [X_val, y_val]
     if sys.stdout.isatty():
         verbose = 2
     else:
@@ -106,11 +109,15 @@ def compile_and_fit(model, X, y):
     model.save('final_model_saving_path')
 
 def format_data(data):
+    shuffle(data)
     X = util.field_array(data, 'X')
     X = pad_sequences(X, maxlen=opts['input_length'], value=0)
     y = [y-1 for y in util.field_array(data, 'y')]
     y = np_utils.to_categorical(y, 9)
-    return X, y
+    return X[int(opts['validation_split'] * len(X)) + 1:], \
+        y[int(opts['validation_split'] * len(y)) + 1:], \
+        X[0:int(opts['validation_split'] * len(X))], \
+        y[0:int(opts['validation_split'] * len(y))] \
 
 def predict(model_filename, data_filename, data_info_filename):
     model = load_model(model_filename)
