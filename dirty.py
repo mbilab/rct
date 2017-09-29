@@ -50,12 +50,12 @@ if '__main__' == __name__:
     #tr = util.load('tmp/tr.dsc-4.pkl')
     #util.histogram(tr)
 
-    tr = util.load('../xgboost/stage_1/tr.dsc-4.pkl')
+    tr = util.load('ignore/stage_1_tmp/tr.dsc-4.pkl')
     #nn.cnn_train(tr)
-    X_val, y_val = nn.cnn2_train(tr)
+    Xv, yv = nn.cnn2_train(tr)
     #nn.rnn_train(tr)
     model = load_model('stage_1_parallel_cnn')
-    prob = model.predict(X_val)
+    prob = model.predict(Xv)
     with open('shuffle.pkl', 'wb') as p:
         pickle.dump(prob, p)
     with open('ytrue.pkl', 'wb') as p:
