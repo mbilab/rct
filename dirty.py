@@ -88,20 +88,8 @@ def xgb_val_cm():
 
 if '__main__' == __name__:
 
-    #tr = preprocess.load('src/te.csv') # tr.pkl, 0:00:01.650411
-    #util.save(tr, 'tmp/te.pkl')
-
-    #tr = util.load('tmp/te.pkl')
-    #preprocess.remove_stop_words(tr) # tr.rsw.pkl, 0:00:46.640691
-    #util.save(tr, 'tmp/te.rsw.pkl')
-
-    #tr = util.load('tmp/te.rsw.pkl')
-    #preprocess.normalize_target_variation(tr) # 0:00:11.750795
-    #preprocess.replace_text(tr, in_field='Variation', to_str=' __TARGET_VARIATION__ ') # 0:00:00.348791
-    #preprocess.sentences(tr) # *.s.pkl, 0:01:16.074815
-    #util.save(tr, 'tmp/te.s.pkl')
-
-    #util.swv('tmp/te.rsw.pkl') # 0:01:10.617185
+    #util.s('tmp/tr', 'tmp/te') # *.s.pkl
+    #util.swv('tmp/te.rsw.pkl') # *.swv.pkl, 0:01:10.617185
 
     #tr = util.s2ds('tmp/tr.s.pkl', 0, True, 1e-4, 'tmp/te.s.pkl') # 0:07:59.554650
     #sys.exit(0)

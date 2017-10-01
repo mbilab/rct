@@ -20,6 +20,21 @@ def histogram(data):
 def load(filename):
     return pickle.load(open(filename, 'rb'))
 
+# sentence
+def s(*filenames):
+    for f in filenames:
+        data = preprocess.load(f+'.csv') # *.pkl, 0:00:01.650411
+        util.save(data, f+'.pkl')
+
+        preprocess.remove_stop_words(data) # *.rsw.pkl, 0:00:46.640691
+        util.save(data, f+'.rsw.pkl')
+
+        #data = util.load(f+'.rsw.pkl')
+        preprocess.normalize_target_variation(data) # 0:00:11.750795
+        preprocess.replace_text(data, in_field='Variation', to_str=' __TARGET_VARIATION__ ') # 0:00:00.348791
+        preprocess.sentences(data) # *.s.pkl, 0:01:16.074815
+        util.save(data, f+'.s.pkl')
+
 # sentence to dummy sequence
 def s2ds(filename, paragraph_size=0, concatenate_by_class=True, tfidf_tolerance=0, test_filename=None): # 0:07:59.554650
     t = tick()
