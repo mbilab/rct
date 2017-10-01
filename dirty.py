@@ -15,19 +15,8 @@ from util import nn
 
 # from xgboost import cv, DMatrix, XGBClassifier
 
-def merge_nn_and_xgb():
-    model = load_model('1.tr.dsc-4.h5')
-    tte = util.load('ignore/stage_1_tmp/tte.dsc-4.pkl')
-    X, y = nn.format_data(tte, False, 0)
-    prob = model.predict(X)
-    nn_prob = prob
-    print(log_loss(y, prob))
-    pred = [v.tolist().index(max(v)) for v in prob]
-    m = confusion_matrix(y, pred)
-    #print(m)
-
-    tt = util.load('tmp1/all.s64.pkl')
-    tt = tt[:3321]
+def xgb_model(model_filename):
+    tt = util.load('tmp/all.s64.pkl')[:3321]
     for d in tt:
         d['X'] = d.pop('svd')
         d['y'] = int(d.pop('Class'))
@@ -35,19 +24,18 @@ def merge_nn_and_xgb():
     model = XGBClassifier(learning_rate=0.1, max_depth=4, n_estimators=1000, objective='multi:softprob', seed=0)
     X = numpy.vstack(X)
     model.fit(X, y)
-    tt = util.load('tmp1/all.s64.pkl')
-    tt = tt[3321:]
-    for d in tt:
-        d['X'] = d.pop('svd')
-        d['y'] = int(d.pop('Class'))
-    X, y = preprocess.format_data(tt)
-    X = numpy.vstack(X)
-    prob = model.predict_proba(X)
-    xgb_prob = prob
-    print(log_loss(y, prob))
-    pred = model.predict(Xv)
-    m = confusion_matrix(yv, pred)
-    #print(m)
+    return model
+
+def merge_nn_and_xgb():
+    te = preprocess.subset('tmp/te.dsc-4.pkl', 'tmp/te.pkl')
+    nn_prob = nn.predict('tmp/tr.dsc-4.h5', te)
+
+    model = xgb_model('tmp/all.s64.pkl')
+    tt = util.load('tmp1/all.s64.pkl')[3321:]
+    X = util.field_array(tt, 'svd')
+    y = util.field_array(tt, 'Class')
+    xgb_prob = model.predict_proba(X)
+
     prob = []
     for n, x in zip(nn_prob, xgb_prob):
         if (0 == x.tolist().index(max(x))) and (0 != n.tolist().index(max(n))) and (6 != n.tolist().index(max(n))):
@@ -77,18 +65,6 @@ def evaluate_xgb():
     model.fit(X, y)
     util.evaluate(model, Xv, yv)
 
-def predict(model, data):
-    if isinstance(model, str):
-        model = load_model(model)
-    X = util.field_array(data, 'X')
-    prob = model.predict(X)
-    print(','.join(
-        ['Gene', 'Variation'] +
-        ['O'+str(i+1) for i in range(prob.shape[1])]))
-    for d, p in zip(data, prob):
-        fields = [d['Gene'], d['Variation']] + list(prob[i])
-        print(','.join([str(v) for v in fields]))
-
 if '__main__' == __name__:
 
     #util.s('tmp/tr', 'tmp/te') # *.s.pkl
@@ -99,7 +75,7 @@ if '__main__' == __name__:
     #evaluate_xgb()
 
     #te = preprocess.subset('tmp/te.dsc-4.pkl', 'tmp/te.pkl')
-    #predict('tmp/tr.dsc-4.h5', te)
+    #nn.predict('tmp/tr.dsc-4.h5', te)
 
 def tfidf_value():
     return

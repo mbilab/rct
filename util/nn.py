@@ -120,27 +120,39 @@ def format_data(data, y_to_categorical=True, validation_split=opts['validation_s
             y  = np_utils.to_categorical(y , 9)
         return X, y
 
-def predict(model_filename, data_filename, data_info_filename):
-    model = load_model(model_filename)
-    data = util.load(data_filename)
-    data_info = util.load(data_info_filename)
+def predict(model, data, to_csv=False):
+    if isinstance(model, str):
+        model = load_model(model)
     X = util.field_array(data, 'X')
     X = pad_sequences(X, maxlen=model.get_layer(index=0).input_shape[1], value=0)
 
-    layer_model = Model(inputs=model.input, outputs=model.get_layer(index=-2).output)
-    h = layer_model.predict(X)
-    o = model.predict(X)
+    prob = model.predict(X)
+    if to_csv:
+        print(','.join(
+            ['Gene', 'Variation'] +
+            ['O'+str(i+1) for i in range(prob.shape[1])]))
+        for d, p in zip(data, prob):
+            fields = [d['Gene'], d['Variation']] + list(prob[i])
+            print(','.join([str(v) for v in fields]))
 
-    print(','.join(
-        ['Gene', 'Variation'] +
-        ['H'+str(i+1) for i in range(h.shape[1])] +
-        ['O'+str(i+1) for i in range(o.shape[1])]))
-    for i in range(len(data)):
-        d = data_info[i]
-        print(','.join([str(v) for v in [
-            d['Gene'], d['Variation']] +
-            list(h[i]) +
-            list(o[i])]))
+        '''
+        layer_model = Model(inputs=model.input, outputs=model.get_layer(index=-2).output)
+        h = layer_model.predict(X)
+        o = model.predict(X)
+    
+        print(','.join(
+            ['Gene', 'Variation'] +
+            ['H'+str(i+1) for i in range(h.shape[1])] +
+            ['O'+str(i+1) for i in range(o.shape[1])]))
+        for i in range(len(data)):
+            d = data_info[i]
+            print(','.join([str(v) for v in [
+                d['Gene'], d['Variation']] +
+                list(h[i]) +
+                list(o[i])]))
+        '''
+
+    return prob
 
 def rnn_train(data):
     #X = [[t.tocoo().data for t in d['X']] for d in data]
