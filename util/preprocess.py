@@ -39,6 +39,7 @@ def normalize_target_variation(data):
     for d in data:
         v = Variation(d['Variation'])
         if 'point' == v.type:
+            v['variation position'] = v.pos
             starts = [v.start_amino] + aa_alias[v.start_amino.upper()]
             if '*' == v.end_amino:
                 aliases = ['%s%sX'  % (s, v.pos) for s in starts]
@@ -48,19 +49,19 @@ def normalize_target_variation(data):
                 aliases = ["%s%s%s" % (s, v.pos, e) for s in starts for e in [v.end_amino] + aa_alias[v.end_amino.upper()]]
             d['Text'] = re.sub('%s' % '|'.join(aliases), v.var, d['Text'], flags=re.IGNORECASE)
 
-def paragraph_by_variation(
+def paragraph_by_regex(
         data,
         window_size=0,
         unit='sentence',
         not_found='first sentence',
         use_first_sentence=True,
-        target_variation='__TARGET_VARIATION__',
+        target_regex=r'__TARGET_VARIATION__|__TARGET_VARIATION_POSITION__',
         paragraph_end=' __PARAGRAPH_END__ '):
     for d in data:
         d['Text'] = ''
         s = d['sentences']
         for i in range(len(s)):
-            if -1 != s[i].find(target_variation):
+            if re.search(target_regex, s[i]):
                 for j in range(max(i - window_size, 0), min(i + window_size + 1, len(s))):
                     d['Text'] += s[j]
                 d['Text'] += paragraph_end
@@ -80,7 +81,8 @@ def remove_stop_words(data):
 
 def replace_text(data, in_field=None, to_str=None):
     for d in data:
-        d['Text'] = re.sub(d[in_field], to_str, d['Text'])
+        if d[in_field]:
+            d['Text'] = re.sub(d[in_field], to_str, d['Text'])
 
 def sentences(data, sentence_end=' __SENTENCE_END__ '):
     for d in data:
