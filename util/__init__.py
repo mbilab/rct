@@ -38,8 +38,8 @@ def s(*filenames):
 
         #data = util.load(f+'.rsw.pkl')
         preprocess.normalize_target_variation(data) # 0:00:11.750795
-        preprocess.replace_text(data, in_field='Variation', to_str=' __TARGET_VARIATION__ ') # 0:00:00.348791
-        preprocess.replace_text(data, in_field='variation position', to_str=' __TARGET_VARIATION_POSITION__ ') # 0:00:00.348791
+        preprocess.replace_text(data, 'Variation', ' __TARGET_VARIATION__ ') # 0:00:00.348791
+        preprocess.replace_text(data, 'variation position', ' __TARGET_VARIATION_POSITION__ ') # 0:00:00.348791
         preprocess.sentences(data) # *.s.pkl, 0:01:16.074815
         util.save(data, f+'.s.pkl')
 

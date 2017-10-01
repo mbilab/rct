@@ -79,7 +79,7 @@ def remove_stop_words(data):
     for d in data:
         d['Text'] = pattern.sub('', d['Text'])
 
-def replace_text(data, in_field=None, to_str=None):
+def replace_text(data, in_field, to_str):
     for d in data:
         if d[in_field]:
             d['Text'] = re.sub(d[in_field], to_str, d['Text'])
