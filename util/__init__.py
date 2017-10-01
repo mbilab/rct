@@ -4,6 +4,13 @@ import numpy
 import pickle
 import re
 
+def evaluate(model, X, y):
+    prob = model.predict(Xv)
+    print(log_loss(y, prob))
+    pred = [v.tolist().index(max(v)) for v in prob]
+    m = confusion_matrix(y, pred)
+    print(m)
+
 def field_array(data, field):
     return [d[field] for d in data]
 
@@ -44,6 +51,7 @@ def s2ds(filename, paragraph_size=0, concatenate_by_class=True, tfidf_tolerance=
     c = preprocess.concatenate(data) if concatenate_by_class else data # 0:00:01.121521
     tsm = encode.tfidf_sequential_model(c) # 0:00:03.516558
     encode.dummy_sequence(data, tsm, tfidf_tolerance) # *.ds.pkl, 0:04:59.167635
+    #util.histogram(data)
     c = 'c' if concatenate_by_class else ''
     #save(data, filename.replace('.pkl', '.ds%s%s.pkl' % (c, tfidf_tolerance)), 'dummy', 'Class')
     if test_filename:

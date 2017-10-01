@@ -90,10 +90,14 @@ def sentences(data, sentence_end=' __SENTENCE_END__ '):
 
 def subset(data, sub_data, sub_fields=['Class'], key_fields=['Gene', 'Variation']):
     keys = []
+    if isinstance(sub_data, str):
+        sub_data = load(sub_data)
     for d in sub_data:
         key = '__'.join([d[f] for f in key_fields])
         keys.append(key)
     new_data = []
+    if isinstance(data, str):
+        data = load(data)
     for d in data:
         key = '__'.join([d[f] for f in key_fields])
         try:
