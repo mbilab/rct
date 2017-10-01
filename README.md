@@ -7,9 +7,6 @@ stored in ~dirty/rct/tmp/
   * dsc: dummy sequence with tficf
   * -4: words with tficf less than 1e-4 are removed
 
-# todo
-* target variation: only number
-
 # env
 mkdir rct
 cd rct/
