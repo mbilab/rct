@@ -52,6 +52,7 @@ def paragraph_by_variation(
         data,
         window_size=0,
         unit='sentence',
+        not_found='first sentence',
         use_first_sentence=True,
         target_variation='__TARGET_VARIATION__',
         paragraph_end=' __PARAGRAPH_END__ '):
@@ -64,8 +65,10 @@ def paragraph_by_variation(
                     d['Text'] += s[j]
                 d['Text'] += paragraph_end
         if '' == d['Text']:
-            if use_first_sentence:
+            if 'first sentence' == not_found:
                 d['Text'] = d['sentences'][0] + paragraph_end # use the first sentence instead
+            elif 'full text' == not_found:
+                d['Text'] = paragraph_end.join(d['sentences'])
             else:
                 d['Text'] = 'No target variation found.'
 

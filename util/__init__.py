@@ -43,10 +43,12 @@ def s(*filenames):
         util.save(data, f+'.s.pkl')
 
 # sentence to dummy sequence
-def s2ds(filename, paragraph_size=0, concatenate_by_class=True, tfidf_tolerance=0, test_filename=None): # 0:07:59.554650
+def s2ds(filename, paragraph_size=0, remove_samples=False, concatenate_by_class=True, tfidf_tolerance=0, test_filename=None): # 0:07:59.554650
     t = tick()
     data = load(filename)
     preprocess.paragraph_by_variation(data, paragraph_size) # *.pbvw*.pkl, 0:00:00.772103
+    if remove_samples:
+        data = [d for d in data if d['Text']]
     #util.save(tr, filename.replace('.pkl', ".pbvw%s.pkl" % (paragraph_size)))
     c = preprocess.concatenate(data) if concatenate_by_class else data # 0:00:01.121521
     tsm = encode.tfidf_sequential_model(c) # 0:00:03.516558
