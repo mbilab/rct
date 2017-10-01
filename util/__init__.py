@@ -30,13 +30,14 @@ def s2ds(filename, paragraph_size=0, concatenate_by_class=True, tfidf_tolerance=
     tsm = encode.tfidf_sequential_model(c) # 0:00:03.516558
     encode.dummy_sequence(data, tsm, tfidf_tolerance) # *.ds.pkl, 0:04:59.167635
     c = 'c' if concatenate_by_class else ''
-    save(data, filename.replace('.pkl', '.ds%s%s.pkl' % (c, tfidf_tolerance)), 'dummy', 'Class')
+    #save(data, filename.replace('.pkl', '.ds%s%s.pkl' % (c, tfidf_tolerance)), 'dummy', 'Class')
     if test_filename:
         filename = test_filename
         data = load(filename)
         encode.dummy_sequence(data, tsm, tfidf_tolerance)
         c = 'c' if concatenate_by_class else ''
-        save(data, filename.replace('.pkl', '.ds%s%s.pkl' % (c, tfidf_tolerance)), 'dummy', 'Class')
+        #save(data, filename.replace('.pkl', '.ds%s%s.pkl' % (c, tfidf_tolerance)), 'dummy', 'Class')
+        save(data, filename.replace('.pkl', '.ds%s%s.pkl' % (c, tfidf_tolerance)), 'dummy')
     t = tick(t, 's2ds')
 
 def save(data, filename, X_field=None, y_field=None, force=False):

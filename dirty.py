@@ -1,18 +1,90 @@
 #!/usr/bin/env python
 
-
 import numpy
-import pandas
-from sklearn.metrics import log_loss
-import sys
-import pickle
 from keras.models import load_model
+import pandas
+import pickle
+from random import Random
+from sklearn.metrics import confusion_matrix, log_loss
+import sys
+from xgboost import XGBClassifier
 
 import util
 from util import encode, preprocess
 from util import nn
 
 # from xgboost import cv, DMatrix, XGBClassifier
+
+def merge_nn_and_xgb():
+    model = load_model('1.tr.dsc-4.h5')
+    tte = util.load('ignore/stage_1_tmp/tte.dsc-4.pkl')
+    X, y = nn.format_data(tte, False, 0)
+    prob = model.predict(X)
+    nn_prob = prob
+    print(log_loss(y, prob))
+    pred = [v.tolist().index(max(v)) for v in prob]
+    m = confusion_matrix(y, pred)
+    #print(m)
+
+    tt = util.load('tmp1/all.s64.pkl')
+    tt = tt[:3321]
+    for d in tt:
+        d['X'] = d.pop('svd')
+        d['y'] = int(d.pop('Class'))
+    X, y, Xv, yv = preprocess.format_data(tt, 0.2)
+    model = XGBClassifier(learning_rate=0.1, max_depth=4, n_estimators=1000, objective='multi:softprob', seed=0)
+    X = numpy.vstack(X)
+    model.fit(X, y)
+    tt = util.load('tmp1/all.s64.pkl')
+    tt = tt[3321:]
+    for d in tt:
+        d['X'] = d.pop('svd')
+        d['y'] = int(d.pop('Class'))
+    X, y = preprocess.format_data(tt)
+    X = numpy.vstack(X)
+    prob = model.predict_proba(X)
+    xgb_prob = prob
+    print(log_loss(y, prob))
+    pred = model.predict(Xv)
+    m = confusion_matrix(yv, pred)
+    #print(m)
+    prob = []
+    for n, x in zip(nn_prob, xgb_prob):
+        if (0 == x.tolist().index(max(x))) and (0 != n.tolist().index(max(n))) and (6 != n.tolist().index(max(n))):
+            prob.append(n)
+        else:
+            prob.append(x)
+    print(log_loss(y, prob))
+    pred = [v.tolist().index(max(v)) for v in prob]
+    m = confusion_matrix(y, pred)
+    print(m)
+
+def nn_val_cm():
+    #tr = util.load('ignore/stage_1_tmp/tr.dsc-4.pkl')
+    tr = util.load('tmp/tr.dsc-4.pkl')
+    X, y, Xv, yv = nn.format_data(tr, False)
+    model = load_model('2.tr.dsc-4.h5')
+    prob = model.predict(Xv)
+    print(log_loss(yv, prob))
+    pred = [v.tolist().index(max(v)) for v in prob]
+    m = confusion_matrix(yv, pred)
+    print(m)
+
+def xgb_val_cm():
+    tt = util.load('tmp1/all.s64.pkl')
+    tt = tt[:3321]
+    for d in tt:
+        d['X'] = d.pop('svd')
+        d['y'] = int(d.pop('Class'))
+    X, y, Xv, yv = preprocess.format_data(tt, 0.2)
+    model = XGBClassifier(learning_rate=0.1, max_depth=4, n_estimators=1000, objective='multi:softprob', seed=0)
+    X = numpy.vstack(X)
+    model.fit(X, y)
+    prob = model.predict_proba(Xv)
+    print(log_loss(yv, prob))
+    pred = model.predict(Xv)
+    m = confusion_matrix(yv, pred)
+    print(m)
 
 if '__main__' == __name__:
 
@@ -23,15 +95,16 @@ if '__main__' == __name__:
     #preprocess.remove_stop_words(tr) # tr.rsw.pkl, 0:00:46.640691
     #util.save(tr, 'tmp/te.rsw.pkl')
 
-    #tr = util.load('tmp/tr.rsw.pkl')
+    #tr = util.load('tmp/te.rsw.pkl')
     #preprocess.normalize_target_variation(tr) # 0:00:11.750795
     #preprocess.replace_text(tr, in_field='Variation', to_str=' __TARGET_VARIATION__ ') # 0:00:00.348791
     #preprocess.sentences(tr) # *.s.pkl, 0:01:16.074815
-    #util.save(tr, 'tmp/tr.s.pkl')
+    #util.save(tr, 'tmp/te.s.pkl')
 
     #util.swv('tmp/te.rsw.pkl') # 0:01:10.617185
 
-    #tr = util.s2ds('tmp1/tr.s.pkl', 0, True, 1e-4, 'tmp1/tte.s.pkl') # 0:07:59.554650
+    #tr = util.s2ds('tmp/tr.s.pkl', 0, True, 1e-4, 'tmp/te.s.pkl') # 0:07:59.554650
+    #sys.exit(0)
 
     #encode.tfidf_sequential(tr, tsm) # *(.c).ts.pkl, 0:08:12.010365
     #util.save(tr, 'tmp/tr.ts.pkl', 'tfidf', 'Class')
@@ -40,7 +113,7 @@ if '__main__' == __name__:
     #encode.sparse_clean(tr, 0.5) # *(.c).ts.sc*.pkl, 0:07:57.079560
     #util.save(tr, 'tmp/tmp.pkl')
 
-    #tr = util.load('ignore/stage_1_tmp/te.pkl')
+    #tr = util.load('tmp/te.pkl')
     #tte = util.load('src/stage_1/trueTstTotal.pkl')
     #tr = preprocess.subset(tr, tte) # tte(.c).ts.pkl, 0:00:00.180169
     #encode.tfidf_sequential(tr, tsm)
@@ -50,16 +123,34 @@ if '__main__' == __name__:
     #tr = util.load('tmp/tr.dsc-4.pkl')
     #util.histogram(tr)
 
-    tr = util.load('ignore/stage_1_tmp/tr.dsc-4.pkl')
+    #tr = util.load('ignore/stage_1_tmp/tr.dsc-4.pkl')
     #nn.cnn_train(tr)
-    Xv, yv = nn.cnn2_train(tr)
+    #Xv, yv = nn.cnn2_train(tr)
     #nn.rnn_train(tr)
-    model = load_model('stage_1_parallel_cnn')
-    prob = model.predict(Xv)
-    with open('shuffle.pkl', 'wb') as p:
-        pickle.dump(prob, p)
-    with open('ytrue.pkl', 'wb') as p:
-        pickle.dump(y_val, p)
+    #print(log_loss(yv, prob))
+
+    #nn_val_cm()
+    #xgb_val_cm()
+
+    tr = util.load('tmp/te.dsc-4.pkl')
+    for d in tr:
+        d['y'] = 0
+    X, y = nn.format_data(tr, False, 0)
+    model = load_model('2.tr.dsc-4.h5')
+    prob = model.predict(X)
+    tr = util.load('tmp/te.pkl')
+    print(','.join(
+        ['Gene', 'Variation'] +
+        ['O'+str(i+1) for i in range(prob.shape[1])]))
+    for i in range(len(prob)):
+        d = tr[i]
+        print(','.join([str(v) for v in [
+            d['Gene'], d['Variation']] +
+            list(prob[i])]))
+    #print(log_loss(y, prob))
+    #pred = [v.tolist().index(max(v)) for v in prob]
+    #m = confusion_matrix(yv, pred)
+    #print(m)
     sys.exit(0)
 
     #tr = util.load('ignore/stage_1_tmp/tr.pkl')
@@ -109,8 +200,8 @@ if '__main__' == __name__:
         d['y'] = int(d.pop('Class')) - 1
     X = numpy.vstack(util.field_array(tt, 'X'))
     y = util.field_array(tt, 'y')
-    proba = model.predict_proba(X)
-    print(log_loss(y, proba))
+    prob = model.predict_proba(X)
+    print(log_loss(y, prob))
 
 #   preprocess.normalize_gene(tr) # not yet
 #   preprocess.replace_text(tr, in_field='Gene', to_str=' __TARGET_GENE__ ')

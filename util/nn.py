@@ -28,7 +28,7 @@ from keras.preprocessing.sequence import pad_sequences
 from keras.utils import np_utils
 
 import util
-from random import Random
+from util import preprocess
 
 def cnn_train(data):
     X, y, X_val, y_val = format_data(data)
@@ -104,15 +104,21 @@ def compile_and_fit(model, X, y, X_val, y_val):
     model.fit(X, y, callbacks=[ckpt, es], verbose=verbose, **fit_opts)
     #model.save('final_model')
 
-def format_data(data):
-    Random(opts['random_state']).shuffle(data)
-    X = util.field_array(data, 'X')
-    X = pad_sequences(X, maxlen=opts['input_length'], value=0)
-    y = [y-1 for y in util.field_array(data, 'y')]
-    y = np_utils.to_categorical(y, 9)
-
-    split = int(opts['validation_split'] * len(y))
-    return X[split:], y[split:], X[:split], y[:split]
+def format_data(data, y_to_categorical=True, validation_split=opts['validation_split'], seed=opts['random_state']):
+    if validation_split:
+        X, y, Xv, yv = preprocess.format_data(data, validation_split, seed)
+        X  = pad_sequences(X , maxlen=opts['input_length'], value=0)
+        Xv = pad_sequences(Xv, maxlen=opts['input_length'], value=0)
+        if y_to_categorical:
+            y  = np_utils.to_categorical(y , 9)
+            yv = np_utils.to_categorical(yv, 9)
+        return X, y, Xv, yv
+    else:
+        X, y = preprocess.format_data(data, validation_split, seed)
+        X  = pad_sequences(X , maxlen=opts['input_length'], value=0)
+        if y_to_categorical:
+            y  = np_utils.to_categorical(y , 9)
+        return X, y
 
 def predict(model_filename, data_filename, data_info_filename):
     model = load_model(model_filename)

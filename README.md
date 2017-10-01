@@ -11,6 +11,10 @@ stored in ~dirty/rct/tmp/
 {tr.te,tte}(.c).ts.sc005.pkl # clean terms with tfidf < 0.05
   * sc: indicates sparse clean
 
+# todo
+* target variation: only number
+* remove no target variation from training
+
 # env
 mkdir rct
 cd rct/

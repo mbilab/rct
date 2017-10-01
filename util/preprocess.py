@@ -5,13 +5,14 @@ from nltk.corpus import stopwords
 import json
 import pandas
 import pickle
+from random import Random
 import re
 
-from util import field_array
+import util
 from util.variation import Variation
 
 def concatenate(data, by_field='Class'):
-    fields = field_array(data, by_field)
+    fields = util.field_array(data, by_field)
     fields = sorted(set(fields))
     field_to_index = { v: i for i, v in enumerate(fields) }
     c = [{ 'Text': '' } for v in fields]
@@ -19,6 +20,16 @@ def concatenate(data, by_field='Class'):
         index = field_to_index[d[by_field]]
         c[index]['Text'] += d['Text'] + ' '
     return c
+
+def format_data(data, validation_split=0, seed=0):
+    Random(seed).shuffle(data)
+    X = util.field_array(data, 'X')
+    y = [y-1 for y in util.field_array(data, 'y')]
+
+    if validation_split:
+        split = int(validation_split * len(y))
+        return X[split:], y[split:], X[:split], y[:split]
+    return X, y
 
 def load(filename):
     return pandas.read_csv(filename).to_dict('records')
